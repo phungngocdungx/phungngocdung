@@ -1,14 +1,8 @@
-{{-- ... (phần HTML của view giữ nguyên như trước) ... --}}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
 <div class="container">
     <head>
         <title>Hộp thư đến {{ $selectedAccount ? 'của ' . $selectedAccount->email : '' }}</title>
-        <meta name="csrf-token" content="{{ csrf_token() }}"> {{-- Quan trọng cho POST/PUT/DELETE AJAX nếu cần --}}
-        <style>
-            .btn-refresh-disabled {
-                opacity: 0.65;
-                cursor: not-allowed;
-            }
-        </style>
     </head>
 
     <h2>📥 Hộp thư đến {{ $selectedAccount ? 'của ' . $selectedAccount->email : '' }}</h2>
@@ -29,11 +23,22 @@
             </select>
         </div>
     </form>
-
-    <div class="mb-3">
-        <button type="button" class="btn btn-primary" id="refreshEmailsButton">
-            🔄 Làm mới Hộp thư
-        </button>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <button type="button" class="btn btn-success" onclick="window.location.href='{{ route('emails.create') }}'">
+                <i class="bi bi-plus"></i>
+                Thêm tài khoản
+            </button>
+            <button type="button" class="btn btn-primary" id="refreshEmailsButton">
+                🔄 Làm mới Hộp thư
+            </button>
+        </div>
+        <div>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ route('home') }}'">
+                <i class="bi bi-house"></i>
+                ️🏠  Trang chủ
+            </button>
+        </div>
     </div>
 
     <div id="alertMessages">
@@ -53,7 +58,8 @@
         <table class="table table-hover table-bordered mt-3">
             <thead class="table-light">
                 <tr>
-                    <th>📧 Chủ đề</th>
+                    <th></th>
+                    <th>📧 Nội dung</th>
                     <th>👤 Người gửi</th>
                     <th>📅 Ngày gửi</th>
                 </tr>
@@ -61,6 +67,7 @@
             <tbody>
                 @foreach($emails as $email)
                     <tr>
+                        <td><b>{{ $email->from_name }}</b></td>
                         <td>{{ $email->subject }}</td>
                         <td>
                             {{ $email->from_name ?? $email->from ?? 'Không rõ' }}
@@ -287,6 +294,3 @@
         }
     });
 </script>
-{{-- @endsection --}}
-
-{{-- <td><b>{{ $email->from_name }}</b></td> --}}

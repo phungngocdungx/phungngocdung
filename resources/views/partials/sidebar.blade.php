@@ -799,7 +799,7 @@
                         <div class="parent-wrapper label-1">
                             <ul class="nav collapse parent" data-bs-parent="#navbarVerticalCollapse" id="nv-email">
                                 <li class="collapsed-nav-item-title d-none">Email</li>
-                                <li class="nav-item"><a class="nav-link" href="apps/email/inbox.html">
+                                <li class="nav-item"><a class="nav-link" href="{{ route('emails.index') }}">
                                         <div class="d-flex align-items-center"><span
                                                 class="nav-link-text">Inbox</span></div>
                                     </a><!-- more inner pages-->

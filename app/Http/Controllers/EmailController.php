@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Email;
@@ -7,8 +6,8 @@ use App\Jobs\FetchMailJob;
 use App\Models\MailAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-// use App\Http\Controllers\Controller; // Không cần nếu đã extends Controller ở trên
-// use Webklex\IMAP\Facades\Client as ClientFacade; // Không dùng trực tiếp ở đây nữa
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Validator;
 
 class EmailController extends Controller
 {
@@ -38,9 +37,10 @@ class EmailController extends Controller
         } else {
             $error = "❌ Chưa có tài khoản email nào được cấu hình.";
         }
+        // dd($emails);
         return view('emails.index', compact('accounts', 'emails', 'selectedAccountId', 'selectedAccount', 'error'));
     }
-
+    
     public function fetchAllEmails(Request $request) // Thêm Request $request
     {
         Log::info('--- fetchAllEmails method called ---');
@@ -70,9 +70,43 @@ class EmailController extends Controller
         }
         Log::info('--- fetchAllEmails method finished ---');
 
+        // Chạy hàng đợi sau khi dispatch tất cả các job
+        Artisan::call('queue:work', [
+            '--stop-when-empty' => true,
+        ]);
+        Log::info('--- queue:work command executed ---');
+
         if ($request->expectsJson()) {
-            return response()->json(['message' => 'Đã gửi yêu cầu làm mới. Email sẽ sớm được cập nhật.', 'jobs_dispatched' => true]);
+            return response()->json(['message' => 'Đã gửi yêu cầu làm mới. Email sẽ sớm được cập nhật.', 'jobs_dispatched' => true, 'queue_started' => true]);
         }
         return back()->with('status', '📬 Đã đưa tất cả tài khoản vào hàng đợi xử lý. Email sẽ sớm được cập nhật.');
     }
+
+    public function create()
+    {
+        return view('emails.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|unique:mail_accounts,email',
+            'app_password' => 'required|min:6', // Bạn có thể điều chỉnh rule cho password
+            'imap_host' => 'required',
+            'imap_port' => 'required|numeric',
+            'imap_encryption' => 'required|in:ssl,tls',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        MailAccount::create($request->all());
+
+        return redirect()->route('emails.index') // Chuyển hướng đến trang danh sách tài khoản (tùy bạn)
+            ->with('success', 'Tài khoản email đã được thêm thành công!');
+    }
+    
 }

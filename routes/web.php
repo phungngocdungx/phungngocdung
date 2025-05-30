@@ -19,8 +19,10 @@ Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/emails', [EmailController::class, 'index'])->name('emails.index');
+
 // Route gửi yêu cầu đồng bộ emails
 Route::get('/trigger-fetch-emails', [EmailController::class, 'fetchAllEmails'])->name('emails.triggerfetch');
+
 // Route cho api gửi đồng bộ emails
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -28,12 +30,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Route gửi đồng bộ emails
 Route::get('/email-sync-status', [EmailSyncStatusController::class, 'getStatus'])->name('api.email.sync.status');
-//  Route để chạy queue:work mỗi phút
-Route::get('/schedule-run', function () {
-    if (request('token') !== env('CRON_TOKEN')) {
-        abort(403);
-    }
 
-    Artisan::call('schedule:run');
-    return 'Schedule executed';
-});
+Route::get('/mail-accounts/create', [EmailController::class, 'create'])->name('emails.create');
+Route::post('/mail-accounts', [EmailController::class, 'store'])->name('emails.store');
