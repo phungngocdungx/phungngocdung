@@ -15,14 +15,24 @@ class ImportSeeder extends Seeder
     public function run(): void
     {
         $tables = [
-            'users' => 'Users',
-            'categories' => 'Categories',
-            // 'products' => 'Products',
-            'roles' => 'Roles',
-            'permissions' => 'Permissions',
+            // Danh sách bảng ưu tiên
+            // 'users' => 'Users',
+            // 'permissions' => 'Permissions',
+            // 'roles' => 'Roles',
+            // 'categories' => 'Categories',
+            // 'platforms' => 'Platforms',
+            // 'family_members' => 'FamilyMembers',
+            // 'mail_accounts' => 'MailAccounts',
+            // 'application_settings' => 'ApplicationSettings',
+            // Import các bảng khác
+            'users_profiles' => 'UsersProfiles',
+            'user_details' => 'UserDetails',
+            'products' => 'Products',
+            'accounts' => 'Accounts',
+            'emails' => 'Emails',
             'model_has_roles' => 'ModelHasRoles',
             'role_has_permissions' => 'RoleHasPermissions',
-            'users_profiles' => 'UsersProfiles',
+            'account_family_members' => 'AccountFamilyMembers',
         ];
 
         // Biến $onlyTables và khối comment liên quan đã được xóa bỏ
