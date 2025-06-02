@@ -24,6 +24,12 @@
                                                 class="nav-link-text">Dashboard</span></div>
                                     </a><!-- more inner pages-->
                                 </li>
+                                <li class="nav-item"><a class="nav-link" href="{{ route('accounts.index') }}">
+                                        <div class="d-flex align-items-center">
+                                            <span class="nav-link-text">Tài Khoản Gia Đình</span>
+                                        </div>
+                                    </a><!-- more inner pages-->
+                                </li>
                                 <li class="nav-item"><a class="nav-link" href="dashboard/project-management.html">
                                         <div class="d-flex align-items-center"><span class="nav-link-text">Project
                                                 management</span>
@@ -1084,12 +1090,19 @@
                                         data-feather="bell"></span></span><span class="nav-link-text-wrapper"><span
                                         class="nav-link-text">Notifications</span></span></div>
                         </a></div><!-- parent pages-->
-                    <div class="nav-item-wrapper"><a class="nav-link label-1" href="pages/members.html"
+                    <div class="nav-item-wrapper">
+                        <a class="nav-link label-1" href="pages/members.html"
                             role="button" data-bs-toggle="" aria-expanded="false">
-                            <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                        data-feather="users"></span></span><span class="nav-link-text-wrapper"><span
-                                        class="nav-link-text">Members</span></span></div>
-                        </a></div><!-- parent pages-->
+                            <div class="d-flex align-items-center">
+                                <span class="nav-link-icon">
+                                    <span data-feather="users"></span>
+                                </span>
+                                <span class="nav-link-text-wrapper">
+                                    <span class="nav-link-text">Members</span>
+                                </span>        
+                            </div>
+                        </a>
+                    </div><!-- parent pages-->
                     <div class="nav-item-wrapper"><a class="nav-link label-1" href="pages/timeline.html"
                             role="button" data-bs-toggle="" aria-expanded="false">
                             <div class="d-flex align-items-center"><span class="nav-link-icon"><span

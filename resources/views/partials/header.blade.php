@@ -137,8 +137,8 @@
                         <div class="py-2"><a class="dropdown-item py-2 d-flex align-items-center"
                                 href="pages/members.html">
                                 <div class="avatar avatar-l status-online  me-2 text-body">
-                                    <img class="rounded-circle " src="assets/img/team/40x40/10.webp"
-                                        alt="" />
+                                    <img class="rounded-circle " src=""
+                                        alt="Image" />
                                 </div>
                                 <div class="flex-1">
                                     <h6 class="mb-0 text-body-highlight title">Carry Anna</h6>
@@ -147,8 +147,8 @@
                             </a>
                             <a class="dropdown-item py-2 d-flex align-items-center" href="pages/members.html">
                                 <div class="avatar avatar-l  me-2 text-body">
-                                    <img class="rounded-circle " src="assets/img/team/40x40/12.webp"
-                                        alt="" />
+                                    <img class="rounded-circle " src=""
+                                        alt="Image" />
                                 </div>
                                 <div class="flex-1">
                                     <h6 class="mb-0 text-body-highlight title">John Smith</h6>
@@ -514,7 +514,7 @@
                     role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true"
                     aria-expanded="false">
                     <div class="avatar avatar-l ">
-                        {{-- <img class="rounded-circle" src="{{ asset($user->profile?->avatar ?? 'https://static.vecteezy.com/system/resources/previews/020/429/953/non_2x/admin-icon-vector.jpg') }}"alt="Avatar" /> --}}
+                        <img class="rounded-circle" src="{{ asset($user->profile?->avatar ?? 'https://static.vecteezy.com/system/resources/previews/020/429/953/non_2x/admin-icon-vector.jpg') }}"alt="Avatar" />
                     </div>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end navbar-dropdown-caret py-0 dropdown-profile shadow border"
@@ -523,11 +523,11 @@
                         <div class="card-body p-0">
                             <div class="text-center pt-4 pb-3">
                                 <div class="avatar avatar-xl ">
-                                    {{-- <img class="rounded-circle" src="{{ asset($user->profile?->avatar ?? 'https://static.vecteezy.com/system/resources/previews/020/429/953/non_2x/admin-icon-vector.jpg') }}" alt="Avatar" /> --}}
+                                    <img class="rounded-circle" src="{{ asset($user->profile?->avatar ?? 'https://static.vecteezy.com/system/resources/previews/020/429/953/non_2x/admin-icon-vector.jpg') }}" alt="Avatar" />
                                 </div>
                                 {{-- Toán tử 3 ngôi check name --}}
                                 
-                                {{-- <h6 class="mt-2 text-body-emphasis">{{ $user->name }}</h6> --}}
+                                <h6 class="mt-2 text-body-emphasis">{{ $user->name }}</h6>
                             </div>
                             <div class="mb-3 mx-3"><input class="form-control form-control-sm" id="statusUpdateInput"
                                     type="text" placeholder="Cập nhật trạng thái tài khoản" /></div>
