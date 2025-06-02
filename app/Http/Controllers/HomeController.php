@@ -13,11 +13,14 @@ class HomeController extends Controller
     }
 
     public function product(){
-        return view('app/e-commerce/admin/product');
+        return view('apps/e-commerce/admin/product');
     }
 
     public function addProduct(){
-        return view('app/e-commerce/admin/add-product');
+        return view('apps/e-commerce/admin/add-product');
     }
 
+    public function showEmail(){
+        return view('apps/email/index');
+    }
 }
