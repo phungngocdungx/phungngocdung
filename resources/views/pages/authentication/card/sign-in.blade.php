@@ -9,7 +9,7 @@
     <!-- ===============================================-->
     <!--    Document Title-->
     <!-- ===============================================-->
-    <title>Phoenix</title>
+    <title>Phùng Ngọc Dũng</title>
 
     <!-- ===============================================-->
     <!--    Favicons-->
@@ -101,7 +101,7 @@
                                     <div class="auth-form-box">
                                         <div class="text-center mb-7"><a
                                                 class="d-flex flex-center text-decoration-none mb-4"
-                                                href="../../../index.html">
+                                                href="{{ route('home') }}">
                                                 <div class="d-flex align-items-center fw-bolder fs-3 d-inline-block">
                                                     <img src="https://cdn-icons-png.flaticon.com/512/2206/2206368.png"
                                                         alt="phoenix" width="58" />
@@ -169,7 +169,7 @@
                                                 </div>
                                                 <div class="col-auto">
                                                     <a class="fs-9 fw-semibold"
-                                                        href="../../../pages/authentication/card/forgot-password.html">Forgot
+                                                        href="#">Forgot
                                                         Password?</a>
                                                 </div>
                                             </div>
