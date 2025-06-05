@@ -157,19 +157,11 @@
                                         <ul class="nav collapse parent show" data-bs-parent="#e-commerce"
                                             id="nv-customer">
                                             <li class="nav-item"><a class="nav-link"
-                                                    href="apps/e-commerce/landing/homepage.html">
+                                                    href="{{ route('accAdmin') }}">
                                                     <div class="d-flex align-items-center"><span
-                                                            class="nav-link-text">Homepage</span></div>
+                                                            class="nav-link-text">Tài khoản admin</span></div>
                                                 </a><!-- more inner pages-->
                                             </li>
-                                            <li class="nav-item"><a class="nav-link"
-                                                    href="apps/e-commerce/landing/product-details.html">
-                                                    <div class="d-flex align-items-center"><span
-                                                            class="nav-link-text">Product details</span>
-                                                    </div>
-                                                </a><!-- more inner pages-->
-                                            </li>
-
                                         </ul>
                                     </div>
                                 </li>

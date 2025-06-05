@@ -11,7 +11,7 @@
                     <div class="d-flex align-items-center"><img
                             src="https://cdn-icons-png.flaticon.com/512/2206/2206368.png" alt="Administration"
                             width="27" />
-                        <h5 class="logo-text ms-2 d-none d-sm-block">Administration</h5>
+                        <h5 class="logo-text ms-2 d-none d-sm-block">Phùng Ngọc Dũng</h5>
                     </div>
                 </div>
             </a>
