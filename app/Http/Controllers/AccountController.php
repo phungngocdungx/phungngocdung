@@ -17,6 +17,7 @@ use App\Http\Requests\UpdateAccountRequest;
 
 class AccountController extends Controller
 {
+    // Quản lý tài khoản của Family Members( Không phải của người dùng đang đăng nhập)
     /**
      * Display a listing of the resource.
      */
