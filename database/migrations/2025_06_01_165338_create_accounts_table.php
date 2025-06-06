@@ -20,6 +20,7 @@ return new class extends Migration
 
             $table->binary('encrypted_username'); // Trường này lưu trữ tên người dùng đã được mã hóa
             $table->binary('encrypted_password'); // Trường này lưu trữ mật khẩu đã được mã hóa
+            $table->binary('encrypted_password_2')->nullable(); // Trường này lưu trữ mật khẩu 2 đã được mã hóa (nếu có)
             $table->binary('encrypted_note')->nullable(); // Trường này lưu trữ ghi chú đã được mã hóa (nếu có)
             $table->timestamps(); // created_at and updated_at
         });
