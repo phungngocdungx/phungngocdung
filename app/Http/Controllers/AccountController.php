@@ -203,47 +203,76 @@ class AccountController extends Controller
 
     public function edit(Account $account) // Laravel Route Model Binding
     {
-        $account->load(['platform', 'familyMembers']);
+        try {
+            $account->load(['platform', 'familyMembers', 'socialnetworkDetail']); // Tải eager load socialnetworkDetail
 
-        $accountData = [
-            'id' => $account->id,
-            'platform_id' => $account->platform_id,
-            'username' => $account->username, // Accessor sẽ giải mã
-            'note' => $account->note,         // Accessor sẽ giải mã
-        ];
-
-        $platformData = null;
-        if ($account->platform) {
-            $platformData = [
-                'id' => $account->platform->id,
-                'name' => $account->platform->name,
-                'description' => $account->platform->description,
-                'logo_path' => $account->platform->logo_path,
+            $accountData = [
+                'id' => $account->id,
+                'platform_id' => $account->platform_id,
+                'username' => $account->username, // Accessor sẽ giải mã
+                'password' => $account->password, // Accessor sẽ giải mã (chỉ để đọc trong data-actual-password, không dùng cho input)
+                'note' => $account->note,         // Accessor sẽ giải mã
+                'encrypted_password_2' => null, // Mặc định là null, sẽ được gán giá trị đã giải mã nếu là VNeID
             ];
+
+            // Nếu là VNeID, giải mã encrypted_password_2
+            if ($account->platform_id == 3 && $account->encrypted_password_2) {
+                try {
+                    $accountData['encrypted_password_2'] = Crypt::decryptString($account->encrypted_password_2);
+                } catch (DecryptException $e) {
+                    $accountData['encrypted_password_2'] = '[Không thể giải mã]';
+                    Log::warning("Lỗi giải mã encrypted_password_2 cho Account ID {$account->id} trong edit: " . $e->getMessage());
+                }
+            }
+
+            $platformData = null;
+            if ($account->platform) {
+                $platformData = [
+                    'id' => $account->platform->id,
+                    'name' => $account->platform->name,
+                    'description' => $account->platform->description,
+                    'logo_path' => $account->platform->logo_path,
+                ];
+            }
+
+            $familyMemberData = null;
+            if ($account->familyMembers->isNotEmpty()) {
+                $firstFamilyMember = $account->familyMembers->first();
+                $familyMemberData = [
+                    'id' => $firstFamilyMember->id,
+                    'name' => $firstFamilyMember->name,
+                    'email' => $firstFamilyMember->email,
+                    // Không gửi master_password_hash về client
+                ];
+            }
+
+            // Lấy tất cả platforms, family members, và mail accounts để điền dropdowns
+            $allPlatforms = Platform::orderBy('name')->get(['id', 'name']);
+            $allFamilyMembers = FamilyMember::all();
+            $mailAccounts = MailAccount::all();
+
+            // Lấy socialnetworkDetail chỉ khi nó là TikTok
+            $socialnetworkDetail = null;
+            if ($account->platform_id == 6 && $account->socialnetworkDetail) {
+                $socialnetworkDetail = $account->socialnetworkDetail;
+            }
+
+            return response()->json([
+                'success' => true,
+                'account' => $accountData,
+                'platform' => $platformData,
+                'family_member' => $familyMemberData,
+                'all_platforms' => $allPlatforms,
+                'all_family_members' => $allFamilyMembers,
+                'mail_accounts' => $mailAccounts, // Pass mail accounts for TikTok
+                'socialnetwork_detail' => $socialnetworkDetail, // Pass social network detail for TikTok
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Account not found.'], 404);
+        } catch (\Exception $e) {
+            Log::error('Lỗi trong AccountController@edit: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json(['success' => false, 'message' => 'Đã có lỗi xảy ra khi tải dữ liệu tài khoản.'], 500);
         }
-
-        $familyMemberData = null;
-        if ($account->familyMembers->isNotEmpty()) {
-            // Lấy family member đầu tiên liên kết với account này để sửa
-            // Trong thực tế, bạn có thể cần logic phức tạp hơn nếu 1 account thuộc nhiều người
-            // và bạn muốn cho phép sửa thông tin của một người cụ thể trong số đó.
-            $firstFamilyMember = $account->familyMembers->first();
-            $familyMemberData = [
-                'id' => $firstFamilyMember->id,
-                'name' => $firstFamilyMember->name,
-                'email' => $firstFamilyMember->email,
-                // Không gửi master_password_hash về client
-            ];
-        }
-
-        $allPlatforms = Platform::orderBy('name')->get(['id', 'name']);
-
-        return response()->json([
-            'account' => $accountData,
-            'platform' => $platformData,
-            'family_member' => $familyMemberData,
-            'all_platforms' => $allPlatforms,
-        ]);
     }
 
     public function update(UpdateAccountRequest $request, Account $account)
@@ -253,17 +282,28 @@ class AccountController extends Controller
         try {
             // TAB 1: Cập nhật Account Info
             $account->platform_id = $validatedData['platform_id'];
-            $account->encrypted_username = Crypt::encryptString($validatedData['username']);
-            if (!empty($validatedData['password'])) {
-                $account->encrypted_password = Crypt::encryptString($validatedData['password']);
-            }
-            if (array_key_exists('note', $validatedData)) {
-                $account->encrypted_note = !empty($validatedData['note']) ? Crypt::encryptString($validatedData['note']) : null;
-            }
-            $account->save();
+            $account->username = $validatedData['username']; // Mutator vẫn hoạt động cho username
 
-            // TAB 2: Cập nhật Platform Info
-            // CẢNH BÁO: Sửa thông tin platform sẽ ảnh hưởng đến tất cả user dùng chung platform này
+            // Cập nhật mật khẩu chính nếu có
+            if (!empty($validatedData['password'])) {
+                $account->password = $validatedData['password']; // Mutator vẫn hoạt động cho password
+            }
+
+            // Xử lý encrypted_password_2 cho VNeID (thủ công, vì không dùng mutator tự động cho cột này)
+            if ($validatedData['platform_id'] == 3) {
+                 if (isset($validatedData['encrypted_password_2'])) {
+                    $account->encrypted_password_2 = Crypt::encryptString($validatedData['encrypted_password_2']);
+                 } else {
+                    $account->encrypted_password_2 = null; // Nếu trường không có hoặc rỗng khi là VNeID
+                 }
+            } else {
+                 $account->encrypted_password_2 = null; // Clear if platform is changed from VNeID
+            }
+
+            $account->note = $validatedData['note'] ?? null; // Mutator vẫn hoạt động cho note
+            $account->save(); // Lưu Account trước để đảm bảo account_id tồn tại cho socialnetworkDetail
+
+            // TAB 2: Cập nhật Platform Info (Giữ nguyên logic này)
             if (isset($validatedData['platform_original_id'])) {
                 $platformToUpdate = Platform::find($validatedData['platform_original_id']);
                 if ($platformToUpdate) {
@@ -274,24 +314,19 @@ class AccountController extends Controller
                 }
             }
 
-            // TAB 3: Cập nhật Family Member Info
-            // CẢNH BÁO: Việc cho phép sửa thông tin FamilyMember ở đây cần cân nhắc kỹ về quyền và bảo mật
+            // TAB 3: Cập nhật Family Member Info (Giữ nguyên logic này)
             if (isset($validatedData['family_member_id_for_tab3']) && !empty($validatedData['family_member_id_for_tab3'])) {
                 $familyMemberToUpdate = FamilyMember::find($validatedData['family_member_id_for_tab3']);
                 if ($familyMemberToUpdate) {
                     $familyMemberToUpdate->name = $validatedData['family_member_name'];
-                    if (array_key_exists('family_member_email', $validatedData)) { // Email có thể là null
+                    if (array_key_exists('family_member_email', $validatedData)) {
                         $familyMemberToUpdate->email = $validatedData['family_member_email'];
                     }
 
-                    // Cập nhật mật khẩu chủ - CẦN CƠ CHẾ BẢO MẬT NGHIÊM NGẶT HƠN
-                    // Ví dụ: Yêu cầu nhập mật khẩu chủ cũ, hoặc xác thực 2 yếu tố.
-                    // Hiện tại chỉ hash nếu có mật khẩu mới.
                     if (!empty($validatedData['family_member_master_password'])) {
-                        if ($validatedData['family_member_master_password'] === $validatedData['family_member_master_password_confirmation']) {
+                        if ($validatedData['family_member_master_password'] === ($validatedData['family_member_master_password_confirmation'] ?? null)) {
                             $familyMemberToUpdate->master_password_hash = Hash::make($validatedData['family_member_master_password']);
                         } else {
-                            // Trả về lỗi validation nếu mật khẩu không khớp (FormRequest nên làm việc này tốt hơn)
                             return response()->json([
                                 'success' => false,
                                 'message' => 'Lỗi validation.',
@@ -303,13 +338,38 @@ class AccountController extends Controller
                 }
             }
 
+            // Logic để xử lý AccountSocialnetworkDetail (CHỈ KHI LÀ TIKTOK)
+            if ($validatedData['platform_id'] == 6) { // CHỈ LÀ ID 6 (TikTok)
+                $socialNetworkDetail = AccountSocialnetworkDetail::firstOrNew(['account_id' => $account->id]);
+
+                // Clear các trường không liên quan để tránh dữ liệu cũ từ nền tảng khác
+                $socialNetworkDetail->mail_account_id = null;
+                $socialNetworkDetail->tiktok_user_id = null;
+                $socialNetworkDetail->follower_count = 0;
+                $socialNetworkDetail->last_login_ip = null;
+                $socialNetworkDetail->status = 'active'; // Đặt lại về mặc định trước khi gán
+
+                // Gán dữ liệu TikTok
+                $socialNetworkDetail->mail_account_id = $validatedData['mail_account_id'] ?? null;
+                $socialNetworkDetail->tiktok_user_id = $validatedData['tiktok_user_id'];
+                $socialNetworkDetail->follower_count = $validatedData['follower_count'] ?? 0;
+                $socialNetworkDetail->status = $validatedData['status'] ?? 'active';
+
+                $socialNetworkDetail->save();
+            } else {
+                // Nếu nền tảng không phải TikTok (bao gồm VNeID và các nền tảng khác), xóa social network detail hiện có
+                if ($account->socialnetworkDetail) {
+                    $account->socialnetworkDetail->delete();
+                }
+            }
+
             return response()->json(['success' => true, 'message' => 'Cập nhật thành công!']);
         } catch (\Exception $e) {
             Log::error('Lỗi trong AccountController@update: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['success' => false, 'message' => 'Đã có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
     }
-
+    
     public function showAccTT(Request $request)
     {
         // Lấy ra tất tài khoản có phatform_id = 6

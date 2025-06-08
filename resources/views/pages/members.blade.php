@@ -52,7 +52,7 @@
                     <button class="nav-link" id="tiktok-accounts-tab" data-bs-toggle="tab"
                         data-bs-target="#tiktok-accounts-pane" type="button" role="tab"
                         aria-controls="tiktok-accounts-pane" aria-selected="false">
-                        Tài khoản TikTok
+                        Management Accounts TikTok
                     </button>
                 </li>
             </ul>
@@ -542,8 +542,8 @@
                                     <div class="input-group">
                                         <input type="password"
                                             class="form-control @error('encrypted_password_2', 'storeAccount') is-invalid @enderror"
-                                            id="encrypted_password_2" name="encrypted_password_2" value="{{ old('encrypted_password_2') }}"
-                                            autocomplete="new-password">
+                                            id="encrypted_password_2" name="encrypted_password_2"
+                                            value="{{ old('encrypted_password_2') }}" autocomplete="new-password">
                                         <button class="btn btn-outline-secondary" type="button"
                                             id="toggleAddPassword2"><i class="fas fa-eye"></i></button>
                                     </div>
@@ -588,7 +588,7 @@
             </div>
         </div>
     </div>
-    {{-- Popup sửa --}}
+    {{-- Popup chỉnh sửa tài khoản --}}
     <div class="modal fade" id="editAccountModal" tabindex="-1" aria-labelledby="editAccountModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -668,6 +668,69 @@
                                     <input type="password" class="form-control" id="edit_password_confirmation"
                                         name="password_confirmation" autocomplete="new-password">
                                 </div>
+
+                                {{-- START: Fields for platforms with social network details in EDIT MODAL --}}
+                                <div id="editSocialNetworkDetailsFields" style="display: none;">
+                                    <h6 class="mb-3 mt-4" id="editPlatformDetailsTitle">Thông tin chi tiết</h6>
+
+                                    {{-- Fields for TikTok (specific to TikTok) --}}
+                                    <div id="editTiktokSpecificFields" style="display: none;">
+                                        <div class="mb-3">
+                                            <label for="edit_mail_account_id" class="form-label">Email liên kết (nếu
+                                                có)</label>
+                                            <select class="form-select" id="edit_mail_account_id" name="mail_account_id">
+                                                <option value="" selected>-- Chọn email --</option>
+                                                @if (isset($mailAccounts) && $mailAccounts->count() > 0)
+                                                    @foreach ($mailAccounts as $mailAccount)
+                                                        <option value="{{ $mailAccount->id }}">
+                                                            {{ $mailAccount->email }}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="edit_tiktok_user_id" class="form-label">ID Người dùng
+                                                TikTok</label>
+                                            <input type="text" class="form-control" id="edit_tiktok_user_id"
+                                                name="tiktok_user_id">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="edit_follower_count" class="form-label">Số lượng người theo
+                                                dõi</label>
+                                            <input type="number" class="form-control" id="edit_follower_count"
+                                                name="follower_count" min="0">
+                                        </div>
+                                        {{-- Trạng thái tài khoản cho TikTok --}}
+                                        <div class="mb-3">
+                                            <label for="edit_account_status" class="form-label">Trạng thái tài
+                                                khoản</label>
+                                            <select class="form-select" id="edit_account_status" name="status">
+                                                <option value="active">Active</option>
+                                                <option value="locked">Locked</option>
+                                                <option value="banned">Banned</option>
+                                            </select>
+                                        </div>
+                                    </div> {{-- End editTiktokSpecificFields --}}
+
+                                    {{-- Fields for VNeID (specific to VNeID - chỉ có encrypted_password_2) --}}
+                                    <div id="editVneidSpecificFields" style="display: none;">
+                                        <div class="mb-3">
+                                            <label for="edit_encrypted_password_2" class="form-label">Mật khẩu cấp 2
+                                                (VNeID)</label>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control"
+                                                    id="edit_encrypted_password_2" name="encrypted_password_2"
+                                                    autocomplete="new-password">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    id="toggleEditVneidPassword2"><i class="fas fa-eye"></i></button>
+                                                {{-- Đã đổi ID --}}
+                                            </div>
+                                        </div>
+                                    </div> {{-- End editVneidSpecificFields --}}
+
+                                </div> {{-- END: editSocialNetworkDetailsFields --}}
+
                                 <div class="mb-3">
                                     <label for="edit_note" class="form-label">Ghi chú</label>
                                     <textarea class="form-control" id="edit_note" name="note" rows="3"></textarea>
@@ -909,7 +972,7 @@
 
 
             // =================================================================================
-            // KHỐI XỬ LÝ CHO MODAL SỬA TÀI KHOẢN (editAccountModal) - Đã cập nhật
+            // KHỐI XỬ LÝ CHO MODAL SỬA TÀI KHOẢN (editAccountModal)
             // =================================================================================
             const editAccountModalElement = document.getElementById('editAccountModal');
             if (editAccountModalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
@@ -942,13 +1005,77 @@
                     });
                 }
 
+                // Các phần tử cho logic hiển thị động của modal EDIT (Lấy an toàn)
+                const editPlatformSelect = document.getElementById('edit_platform_id');
+                const editSocialNetworkDetailsFields = document.getElementById('editSocialNetworkDetailsFields');
+                const editTiktokSpecificFields = document.getElementById('editTiktokSpecificFields');
+                const editVneidSpecificFields = document.getElementById('editVneidSpecificFields');
+                const editPlatformDetailsTitle = document.getElementById('editPlatformDetailsTitle');
+                const editAccountStatusField = document.getElementById('edit_account_status');
+                const editEncryptedPassword2Field = document.getElementById(
+                'edit_encrypted_password_2'); // ID đã được đổi
+                const editLastLoginIpField = document.getElementById('edit_last_login_ip');
+
+                // Nút hiện/ẩn mật khẩu cấp 2 trong modal SỬA (cho VNeID) - Đảm bảo ID khớp với HTML
+                const toggleEditVneidPassword2Button = document.getElementById(
+                'toggleEditVneidPassword2'); // ID đã được đổi
+                if (toggleEditVneidPassword2Button && editEncryptedPassword2Field) {
+                    toggleEditVneidPassword2Button.addEventListener('click', function() {
+                        const type = editEncryptedPassword2Field.getAttribute('type') === 'password' ?
+                            'text' : 'password';
+                        editEncryptedPassword2Field.setAttribute('type', type);
+                        const icon = this.querySelector('i.fas');
+                        if (icon) {
+                            icon.classList.toggle('fa-eye');
+                            icon.classList.toggle('fa-eye-slash');
+                        }
+                    });
+                }
+
+                // Hàm để bật/tắt hiển thị các trường chi tiết cụ thể cho từng nền tảng trong modal SỬA
+                function togglePlatformSpecificFieldsForEditModal() {
+                    // Kiểm tra sự tồn tại của editPlatformSelect trước khi truy cập .value
+                    const selectedPlatformId = editPlatformSelect ? editPlatformSelect.value : null;
+
+                    // Ẩn tất cả các khối chi tiết và tiêu đề trước (kiểm tra sự tồn tại trước khi thao tác)
+                    if (editSocialNetworkDetailsFields) editSocialNetworkDetailsFields.style.display = 'none';
+                    if (editTiktokSpecificFields) editTiktokSpecificFields.style.display = 'none';
+                    if (editVneidSpecificFields) editVneidSpecificFields.style.display = 'none';
+
+                    // Reset các giá trị của các trường cụ thể khi chúng bị ẩn (kiểm tra null trước)
+                    const editMailAccountIdInput = document.getElementById('edit_mail_account_id');
+                    const editTiktokUserIdInput = document.getElementById('edit_tiktok_user_id');
+                    const editFollowerCountInput = document.getElementById('edit_follower_count');
+
+                    if (editMailAccountIdInput) editMailAccountIdInput.value = '';
+                    if (editTiktokUserIdInput) editTiktokUserIdInput.value = '';
+                    if (editFollowerCountInput) editFollowerCountInput.value = '0';
+                    if (editEncryptedPassword2Field) editEncryptedPassword2Field.value =
+                    ''; // Reset encrypted_password_2
+                    if (editLastLoginIpField) editLastLoginIpField.value = ''; // Reset last_login_ip
+                    if (editAccountStatusField) editAccountStatusField.value = 'active'; // Reset status
+
+                    // Hiển thị các khối chi tiết và trường cụ thể dựa trên nền tảng đã chọn
+                    if (selectedPlatformId === '6') { // TikTok
+                        if (editSocialNetworkDetailsFields) editSocialNetworkDetailsFields.style.display = 'block';
+                        if (editPlatformDetailsTitle) editPlatformDetailsTitle.textContent =
+                            'Thông tin chi tiết TikTok';
+                        if (editTiktokSpecificFields) editTiktokSpecificFields.style.display = 'block';
+                    } else if (selectedPlatformId === '3') { // VNeID
+                        if (editSocialNetworkDetailsFields) editSocialNetworkDetailsFields.style.display = 'block';
+                        if (editPlatformDetailsTitle) editPlatformDetailsTitle.textContent =
+                            'Thông tin chi tiết VNeID';
+                        if (editVneidSpecificFields) editVneidSpecificFields.style.display = 'block';
+                    }
+                }
+
                 // Lắng nghe sự kiện click trên các nút "Sửa" trong dropdown
                 document.querySelectorAll('.btn-edit-account').forEach(editButton => {
                     editButton.addEventListener('click', function(event) {
                         event.preventDefault();
                         const accountId = this.dataset.accountId;
                         if (!accountId) {
-                            /* ... */
+                            console.error('Không tìm thấy account ID cho nút chỉnh sửa.');
                             return;
                         }
 
@@ -961,9 +1088,7 @@
                         }
                         if (editAccountForm) editAccountForm.reset();
 
-                        fetch(
-                                `/accounts/${accountId}/edit`
-                            ) // Controller @edit sẽ trả về account, platform, family_member, all_platforms
+                        fetch(`/accounts/${accountId}/edit`)
                             .then(response => {
                                 if (!response.ok) {
                                     return response.json().then(err => Promise.reject(err || {
@@ -973,8 +1098,8 @@
                                 return response.json();
                             })
                             .then(data => {
-                                if (data.account && data.platform && data.all_platforms && data
-                                    .family_member) {
+                                if (data.success && data.account && data.platform && data
+                                    .all_platforms && data.family_member) {
                                     // TAB 1: Account Info
                                     const platformSelect = document.getElementById(
                                         'edit_platform_id');
@@ -985,7 +1110,8 @@
                                     platformSelect.value = data.account.platform_id;
                                     document.getElementById('edit_username').value = data
                                         .account.username;
-                                    document.getElementById('edit_password').value = '';
+                                    document.getElementById('edit_password').value =
+                                    ''; // Giữ rỗng vì là "mật khẩu mới"
                                     document.getElementById('edit_password_confirmation')
                                         .value = '';
                                     document.getElementById('edit_note').value = data.account
@@ -1010,9 +1136,47 @@
                                     document.getElementById('edit_fm_email').value = data
                                         .family_member.email || '';
                                     document.getElementById('edit_fm_master_password').value =
-                                        '';
+                                        ''; // Giữ rỗng
                                     document.getElementById(
                                         'edit_fm_master_password_confirmation').value = '';
+
+                                    // Gọi hàm để hiển thị/ẩn các trường chi tiết sau khi dữ liệu được tải
+                                    togglePlatformSpecificFieldsForEditModal
+                                (); // Gọi hàm này để ẩn tất cả và reset
+
+                                    // Sau khi hàm toggle đã ẩn và reset, hãy đặt giá trị từ dữ liệu đã fetch
+                                    if (data.socialnetwork_detail) {
+                                        if (editAccountStatusField) editAccountStatusField
+                                            .value = data.socialnetwork_detail.status ||
+                                            'active';
+
+                                        if (data.platform.id === 6) { // TikTok
+                                            document.getElementById('edit_mail_account_id')
+                                                .value = data.socialnetwork_detail
+                                                .mail_account_id || '';
+                                            document.getElementById('edit_tiktok_user_id')
+                                                .value = data.socialnetwork_detail
+                                                .tiktok_user_id || '';
+                                            document.getElementById('edit_follower_count')
+                                                .value = data.socialnetwork_detail
+                                                .follower_count || '0';
+                                        }
+                                    }
+
+                                    // Gán giá trị encrypted_password_2 nếu là VNeID (không phụ thuộc socialnetworkDetail)
+                                    if (data.platform.id === 3) {
+                                        if (editEncryptedPassword2Field)
+                                            editEncryptedPassword2Field.value = data.account
+                                            .encrypted_password_2 || '';
+                                    }
+
+
+                                    // Event listener for platform change in edit modal (chỉ gắn một lần)
+                                    // Đảm bảo không gắn nhiều listener
+                                    editPlatformSelect.removeEventListener('change',
+                                        togglePlatformSpecificFieldsForEditModal);
+                                    editPlatformSelect.addEventListener('change',
+                                        togglePlatformSpecificFieldsForEditModal);
 
                                     if (editAccountForm) editAccountForm.action =
                                         `/accounts/${data.account.id}`;
@@ -1048,7 +1212,6 @@
                         const formData = new FormData(this);
                         formData.append('_method', 'PUT');
                         if (!csrfToken) {
-                            /* ... */
                             saveButton.disabled = false;
                             saveButton.innerHTML = 'Lưu Tất Cả Thay Đổi';
                             return;
@@ -1091,20 +1254,25 @@
                             })
                             .catch(error => {
                                 console.error('Lỗi Submit Form Sửa Chính:', error);
-                                let primaryErrorDisplay = errorDivs.tab1 ||
-                                    null; // Mặc định hiển thị lỗi ở tab 1
+                                let primaryErrorDisplay = errorDivs.tab1 || null;
 
                                 if (error.validationErrors) {
                                     let errorHtml = '<strong>Vui lòng sửa các lỗi sau:</strong><ul>';
                                     for (const field in error.validationErrors) {
-                                        // Cố gắng gán lỗi vào đúng tab
                                         if (field.startsWith('family_member_')) primaryErrorDisplay =
                                             errorDivs.tab3 || errorDivs.tab1;
                                         else if (field.startsWith('platform_name') || field.startsWith(
                                                 'platform_description') || field.startsWith(
                                                 'platform_logo_path')) primaryErrorDisplay = errorDivs
                                             .tab2 || errorDivs.tab1;
-                                        else primaryErrorDisplay = errorDivs.tab1 || null;
+                                        else if (field.startsWith('mail_account_id') || field
+                                            .startsWith('tiktok_user_id') ||
+                                            field.startsWith('follower_count') || field.startsWith(
+                                                'encrypted_password_2') ||
+                                            field.startsWith('last_login_ip') || field.startsWith(
+                                                'status')) {
+                                            primaryErrorDisplay = errorDivs.tab1 || null;
+                                        } else primaryErrorDisplay = errorDivs.tab1 || null;
 
                                         error.validationErrors[field].forEach(message => errorHtml +=
                                             `<li>${message}</li>`);
@@ -1115,7 +1283,7 @@
                                         primaryErrorDisplay.style.display = 'block';
                                     } else {
                                         showUIMessage(errorHtml, 'danger', true);
-                                    } // true để parse HTML
+                                    }
                                 } else {
                                     const message = error.message || 'Không thể cập nhật.';
                                     if (primaryErrorDisplay && (primaryErrorDisplay.style.display ===
@@ -1149,9 +1317,18 @@
                     const platformSelect = document.getElementById('edit_platform_id');
                     if (platformSelect) platformSelect.innerHTML =
                         '<option value="">-- Chọn nền tảng --</option>';
+                    // Reset/hide specific fields in edit modal
+                    togglePlatformSpecificFieldsForEditModal(); // Đảm bảo mọi thứ được reset đúng cách
+                    // Reset các trường cụ thể một lần nữa để chắc chắn
+                    document.getElementById('edit_encrypted_password_2').value = '';
+                    document.getElementById('edit_last_login_ip').value = '';
+                    document.getElementById('edit_mail_account_id').value = '';
+                    document.getElementById('edit_tiktok_user_id').value = '';
+                    document.getElementById('edit_follower_count').value = '0';
+                    document.getElementById('edit_account_status').value = 'active';
                 });
             } else {
-                /* ... console.warn ... */
+                console.warn('JS Warning: Modal #editAccountModal hoặc Bootstrap JS chưa sẵn sàng.');
             }
 
 
@@ -1167,7 +1344,7 @@
             const tiktokSpecificFields = document.getElementById('tiktok_specific_fields');
             const vneidSpecificFields = document.getElementById('vneid_specific_fields');
             const addStatusField = document.getElementById(
-            'add_status'); // Trường status chung (đã có trong tiktok_specific_fields)
+                'add_status'); // Trường status chung (đã có trong tiktok_specific_fields)
 
             // Nút hiện/ẩn pass trong modal THÊM (mật khẩu chính)
             const toggleAddPasswordButton = document.getElementById('toggleAddPassword');
@@ -1190,7 +1367,7 @@
             if (toggleAddPassword2Button && addPassword2Field) {
                 toggleAddPassword2Button.addEventListener('click', function() {
                     const type = addPassword2Field.getAttribute('type') === 'password' ? 'text' :
-                    'password';
+                        'password';
                     addPassword2Field.setAttribute('type', type);
                     const icon = this.querySelector('i.fas');
                     if (icon) {
@@ -1243,7 +1420,7 @@
             if (addPlatformSelect) {
                 togglePlatformSpecificFieldsForAddModal(); // Kiểm tra ban đầu khi trang tải
                 addPlatformSelect.addEventListener('change',
-                togglePlatformSpecificFieldsForAddModal); // Lắng nghe thay đổi
+                    togglePlatformSpecificFieldsForAddModal); // Lắng nghe thay đổi
             }
 
             // Logic cho form thêm Platform mới bên trong addAccountModal (Giữ nguyên từ code bạn cung cấp)
@@ -1253,7 +1430,7 @@
             const btnSaveNewPlatformAjax = document.getElementById('btnSaveNewPlatformAjax');
 
             const platformSelectForAddModal = document.getElementById(
-            'add_platform_id'); // Khai báo lại cho rõ ràng trong khối này
+                'add_platform_id'); // Khai báo lại cho rõ ràng trong khối này
             const platformSelectForEditModal = document.getElementById('edit_platform_id');
 
             const ajaxNewPlatformErrorsDiv = document.getElementById('ajaxNewPlatformErrors');
