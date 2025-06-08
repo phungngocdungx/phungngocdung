@@ -372,13 +372,53 @@ class AccountController extends Controller
     
     public function showAccTT(Request $request)
     {
-        // Lấy ra tất tài khoản có phatform_id = 6
-        $accounts = Account::where('platform_id', 6)
-            ->with(['platform', 'familyMembers'])
-            ->orderByDesc('updated_at')
-            ->paginate(15);
+        // Lấy thông tin người dùng đang đăng nhập
+        $user = Auth::user();
 
-        // dd($accounts);
-        return view('apps.account.tiktok.index', compact('accounts'));
+        // ID của nền tảng TikTok (giả sử là 6)
+        $tiktokPlatformId = 6;
+
+        // Lấy danh sách các tài khoản KHÔNG PHẢI TikTok
+        // Sắp xếp theo tên nền tảng, sau đó theo ngày cập nhật
+        $otherAccounts = Account::with(['platform', 'familyMembers'])
+            ->where('platform_id', '!=', $tiktokPlatformId)
+            ->select('accounts.*') // Quan trọng khi dùng join
+            ->join('platforms', 'accounts.platform_id', '=', 'platforms.id')
+            ->orderBy('platforms.name', 'asc')
+            ->orderByDesc('accounts.updated_at')
+            ->get(); // Lấy tất cả, nếu muốn phân trang sẽ xử lý phức tạp hơn với tab
+
+        // Lấy danh sách các tài khoản LÀ TikTok, cùng với thông tin chi tiết
+        // Sắp xếp theo ngày cập nhật gần nhất
+        // --- Xử lý cho Tab TikTok với logic phân quyền MỚI ---
+
+        // 1. Xây dựng câu truy vấn CƠ SỞ cho tài khoản TikTok
+        $tiktokQuery = Account::with(['platform', 'familyMembers', 'socialnetworkDetail.mailAccount'])
+            ->where('platform_id', $tiktokPlatformId);
+
+        // 2. ÁP DỤNG ĐIỀU KIỆN LỌC DỰA TRÊN VAI TRÒ
+        // =========================================================
+        // THAY ĐỔI CHÍNH Ở ĐÂY
+        // Giả sử tên vai trò trong database của bạn là 'manager'
+        if ($user && $user->hasRole('manage')) {
+            // dd('Đã vào trong block IF của manager. Sẽ bắt đầu lọc...'); 
+            // =========================================================
+            // Thêm điều kiện: chỉ lấy các account có socialnetworkDetail với status là 'active'
+            $tiktokQuery->whereHas('socialnetworkDetail', function ($query) {
+                $query->where('status', 'active');
+            });
+        }
+        // Nếu người dùng là 'admin' hoặc vai trò khác, điều kiện if ở trên sẽ sai,
+        // và không có bộ lọc nào được áp dụng, do đó Admin sẽ thấy tất cả.
+        // dd($user->roles);
+        // 3. Thực thi câu truy vấn
+        $tiktokAccounts = $tiktokQuery->orderByDesc('updated_at')->get();
+
+        // Lấy các dữ liệu phụ cần cho các modal (Thêm, Sửa)
+        $platforms = Platform::orderBy('name')->get();
+        $allFamilyMembers = FamilyMember::orderBy('name')->get();
+        $mailAccounts = MailAccount::all();
+        // dd($tiktokAccounts);
+        return view('apps.account.tiktok.index', compact('otherAccounts', 'tiktokAccounts', 'platforms', 'allFamilyMembers', 'mailAccounts'));
     }
 }
