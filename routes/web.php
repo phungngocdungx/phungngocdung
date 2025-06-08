@@ -48,12 +48,14 @@ Route::prefix('emails')->name('emails.')->group(function () {
     Route::get('/', [EmailController::class, 'index'])->name('index');
     Route::get('/create', [EmailController::class, 'create'])->name('create');
     Route::post('/', [EmailController::class, 'store'])->name('store');
-    // Nếu nút "Làm mới hộp thư" chỉ làm mới tài khoản hiện tại, có thể không cần route này cho nút đó nữa.
-    Route::post('/trigger-fetch-all-emails', [EmailController::class, 'fetchAllEmails'])->name('emails.triggerFetchAll'); // Đổi sang POST và tên route khác
-    // --- ROUTE MỚI ĐỂ FETCH EMAIL CHO MỘT TÀI KHOẢN CỤ THỂ ---
-    // Sử dụng POST vì đây là một action
-    Route::post('/apps/email/account/{accountId}/fetch', [EmailController::class, 'fetchEmailsForSpecificAccount'])->name('emails.fetchForAccount');
+    Route::put('/update/{id}', [EmailController::class, 'update'])->name('update');
 
+    
+    Route::post('/trigger-fetch-all-emails', [EmailController::class, 'fetchAllEmails'])->name('emails.triggerFetchAll');// Nếu nút "Làm mới hộp thư" chỉ làm mới tài khoản hiện tại, có thể không cần route này cho nút đó nữa.
+
+    Route::get('/get-mail-account/{id}', [EmailController::class, 'getMailAccountForEdit'])->name('getMailAccountForEdit');// Route để lấy thông tin tài khoản email cho việc chỉnh sửa
+
+    Route::post('/apps/email/account/{accountId}/fetch', [EmailController::class, 'fetchEmailsForSpecificAccount'])->name('emails.fetchForAccount');
 
     // Route cho api kiểm tra trạng thái đồng bộ (giữ nguyên)
     Route::get('/email-sync-status', [EmailSyncStatusController::class, 'getStatus'])->name('api.email.sync.status');

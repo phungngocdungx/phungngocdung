@@ -168,4 +168,73 @@ class EmailController extends Controller
         return redirect()->route('emails.index')
                          ->with('success', 'Tài khoản email đã được thêm thành công!');
     }
+
+    /**
+     * Hiển thị biểu mẫu để chỉnh sửa tài khoản email cụ thể.
+     * Laravel sẽ tự động inject MailAccount dựa vào ID trong route.
+     * @param  \App\Models\MailAccount  $id // Tên biến khớp với {id} trong route
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, MailAccount $id)
+    {
+        $emailAccount = $id; // Đặt lại tên biến cho rõ ràng
+
+        $request->validate([
+            'email' => 'required|email|unique:mail_accounts,email,' . $emailAccount->id,
+            'app_password' => 'nullable|min:6', // app_password có thể trống nếu không muốn thay đổi
+        ]);
+
+        $emailAccount->email = $request->email;
+
+        if ($request->filled('app_password')) { // Chỉ cập nhật nếu app_password được nhập
+            $emailAccount->app_password = $request->app_password;
+        }
+
+        // Nếu bạn có các trường IMAP khác trong form và muốn cập nhật:
+        // $emailAccount->imap_host = $request->input('imap_host', $emailAccount->imap_host);
+        // $emailAccount->imap_port = $request->input('imap_port', $emailAccount->imap_port);
+        // $emailAccount->imap_encryption = $request->input('imap_encryption', $emailAccount->imap_encryption);
+
+        $emailAccount->save();
+
+        // --- ĐÂY LÀ PHẦN SỬA LỖI QUAN TRỌNG ---
+        // Kiểm tra nếu yêu cầu là AJAX (được gửi từ fetch API của trình duyệt)
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Tài khoản email đã được cập nhật thành công!',
+                'status' => 'success',
+                'account' => $emailAccount // Tùy chọn: trả về dữ liệu tài khoản đã cập nhật
+            ], 200); // Mã trạng thái 200 OK
+        }
+
+        // Nếu không phải là AJAX request, thì thực hiện redirect như bình thường
+        return redirect()->route('emails.index')
+            ->with('status', 'Tài khoản email đã được cập nhật thành công.');
+    }
+
+
+    public function getMailAccountForEdit(MailAccount $id)
+    {
+        // $id đã là đối tượng MailAccount nhờ Route Model Binding
+        $account = $id;
+
+        if (!$account) {
+            return response()->json(['message' => 'Tài khoản không tồn tại.', 'error' => 'not_found'], 404);
+        }
+
+        // Trả về dữ liệu tài khoản dưới dạng JSON
+        // LƯU Ý: Không bao giờ trả về mật khẩu ứng dụng đã giải mã công khai.
+        // Nếu bạn muốn hiển thị mật khẩu dưới dạng placeholder (ví dụ: ********),
+        // bạn không nên gửi mật khẩu thật. User sẽ nhập lại mật khẩu mới nếu muốn thay đổi.
+        return response()->json([
+            'id' => $account->id,
+            'email' => $account->email,
+            'imap_host' => $account->imap_host,
+            'imap_port' => $account->imap_port,
+            'imap_encryption' => $account->imap_encryption,
+            // KHÔNG BAO GỒM 'app_password' TRỰC TIẾP VÌ LÝ DO BẢO MẬT.
+            // Sẽ chỉ có trường trống trong form cho người dùng nhập mật khẩu mới.
+        ]);
+    }
+    
 }

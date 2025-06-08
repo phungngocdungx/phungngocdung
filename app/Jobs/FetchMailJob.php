@@ -288,8 +288,8 @@ class FetchMailJob implements ShouldQueue
             // --- KẾT THÚC LOGIC ĐỒNG BỘ XÓA ---
 
 
-            // --- BẮT ĐẦU LOGIC LẤY VÀ CẬP NHẬT 5 EMAIL MỚI NHẤT ---
-            Log::info("[Job ID: {$jobId}] Đã có " . $serverMessagesCollection->count() . " tổng số email từ server (dùng để sắp xếp lấy 5 email mới nhất).");
+            // --- BẮT ĐẦU LOGIC LẤY VÀ CẬP NHẬT 2 EMAIL MỚI NHẤT ---
+            Log::info("[Job ID: {$jobId}] Đã có " . $serverMessagesCollection->count() . " tổng số email từ server (dùng để sắp xếp lấy 2 email mới nhất).");
 
             $sortedMessages = $serverMessagesCollection->sortByDesc(function (Message $message) use ($jobId) {
                 /** @var \Webklex\PHPIMAP\Message $message */
@@ -313,10 +313,10 @@ class FetchMailJob implements ShouldQueue
                 }
             });
 
-            $messagesToProcess = $sortedMessages->take(5); // Lấy 5 email mới nhất
+            $messagesToProcess = $sortedMessages->take(2); // Lấy 2 email mới nhất
             Log::info("[Job ID: {$jobId}] Chuẩn bị xử lý nội dung cho tối đa " . $messagesToProcess->count() . " email mới nhất sau khi sắp xếp.");
 
-            $processedAndKeptMessageIds = []; // Lưu ID của 5 email mới nhất được xử lý
+            $processedAndKeptMessageIds = []; // Lưu ID của 2 email mới nhất được xử lý
 
             foreach ($messagesToProcess as $message) {
                 /** @var \Webklex\PHPIMAP\Message $message */
@@ -365,12 +365,12 @@ class FetchMailJob implements ShouldQueue
                 $processedAndKeptMessageIds[] = $messageId; // Thêm vào danh sách giữ lại
             }
             Log::info("[Job ID: {$jobId}] Đã xử lý (updateOrCreate) nội dung cho " . count($processedAndKeptMessageIds) . " email. IDs: " . (!empty($processedAndKeptMessageIds) ? implode(', ', $processedAndKeptMessageIds) : 'Không có'));
-            // --- KẾT THÚC LOGIC LẤY VÀ CẬP NHẬT 5 EMAIL MỚI NHẤT ---
+            // --- KẾT THÚC LOGIC LẤY VÀ CẬP NHẬT 2 EMAIL MỚI NHẤT ---
 
 
-            // --- BẮT ĐẦU LOGIC XÓA EMAIL CŨ HƠN 5 EMAIL MỚI NHẤT KHỎI LOCAL DB ---
+            // --- BẮT ĐẦU LOGIC XÓA EMAIL CŨ HƠN 2 EMAIL MỚI NHẤT KHỎI LOCAL DB ---
             if (!empty($processedAndKeptMessageIds)) {
-                // Xóa tất cả email của tài khoản này trong DB mà message_id KHÔNG nằm trong danh sách 5 email vừa xử lý
+                // Xóa tất cả email của tài khoản này trong DB mà message_id KHÔNG nằm trong danh sách 2 email vừa xử lý
                 $deletedOlderCount = Email::where('mail_account_id', $this->account->id)
                                      ->whereNotIn('message_id', $processedAndKeptMessageIds)
                                      ->delete();
@@ -380,13 +380,13 @@ class FetchMailJob implements ShouldQueue
                     Log::info("[Job ID: {$jobId}] Không có email cũ hơn nào cần xóa thêm cho tài khoản {$this->account->id} (ngoài những email đã được đồng bộ xóa nếu không còn trên server).");
                 }
             } else {
-                // Trường hợp không xử lý được email nào ở bước trên (ví dụ: server không có email, hoặc cả 5 email đều lỗi không lấy được MessageID)
+                // Trường hợp không xử lý được email nào ở bước trên (ví dụ: server không có email, hoặc cả 2 email đều lỗi không lấy được MessageID)
                 // Cân nhắc: Nếu $serverMessageIds cũng rỗng (server không có email nào), thì logic đồng bộ xóa ở trên có thể đã xóa hết local email nếu có.
-                // Nếu $serverMessageIds không rỗng nhưng $processedAndKeptMessageIds lại rỗng, có thể có vấn đề khi lấy message_id hoặc xử lý top 5.
+                // Nếu $serverMessageIds không rỗng nhưng $processedAndKeptMessageIds lại rỗng, có thể có vấn đề khi lấy message_id hoặc xử lý top 2.
                 // Không thực hiện xóa `whereNotIn` với mảng rỗng để tránh xóa nhầm toàn bộ email của tài khoản nếu có lỗi ở bước lấy `processedAndKeptMessageIds`.
                 Log::warning("[Job ID: {$jobId}] Không có email nào được xác định là 'mới nhất để giữ lại' trong lần chạy này cho tài khoản {$this->account->id}. Sẽ không thực hiện xóa email cũ hơn dựa trên tiêu chí này.");
             }
-            // --- KẾT THÚC LOGIC XÓA EMAIL CŨ HƠN 5 EMAIL MỚI NHẤT ---
+            // --- KẾT THÚC LOGIC XÓA EMAIL CŨ HƠN 2 EMAIL MỚI NHẤT ---
 
 
             Log::info("[Job ID: {$jobId}] 💾 (Job) Đã hoàn tất FetchMailJob cho tài khoản: {$this->account->email}");
