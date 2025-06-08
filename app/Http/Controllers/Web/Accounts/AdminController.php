@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Account\Admin;
+namespace App\Http\Controllers\Web\Accounts;
 
-use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class AdminController extends Controller
 {

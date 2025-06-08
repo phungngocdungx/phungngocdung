@@ -157,9 +157,15 @@
                                         <ul class="nav collapse parent show" data-bs-parent="#e-commerce"
                                             id="nv-customer">
                                             <li class="nav-item"><a class="nav-link"
-                                                    href="{{ route('accAdmin') }}">
+                                                    href="{{ route('admin.index') }}">
                                                     <div class="d-flex align-items-center"><span
                                                             class="nav-link-text">Tài khoản admin</span></div>
+                                                </a><!-- more inner pages-->
+                                            </li>
+                                            <li class="nav-item"><a class="nav-link"
+                                                    href="{{ route('tiktok.index') }}">
+                                                    <div class="d-flex align-items-center"><span
+                                                            class="nav-link-text">Tik Tok</span></div>
                                                 </a><!-- more inner pages-->
                                             </li>
                                         </ul>

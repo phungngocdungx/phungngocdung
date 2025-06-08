@@ -69,4 +69,15 @@ class Account extends Model
             return '[Không thể giải mã]';
         }
     }
+
+    /**
+     * Định nghĩa mối quan hệ "hasOne" với model AccountSocialnetworkDetail.
+     * Mỗi tài khoản có thể có một dòng chi tiết mạng xã hội.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function socialnetworkDetail()
+    {
+        return $this->hasOne(AccountSocialnetworkDetail::class, 'account_id');
+    }
 }
