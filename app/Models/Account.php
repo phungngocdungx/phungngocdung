@@ -9,17 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Account extends Model
 {
-    /** @use HasFactory<\Database\Factories\AccountFactory> */
     use HasFactory;
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+
     protected $fillable = [
         'platform_id',
         'encrypted_username',
         'encrypted_password',
+        'encrypted_password_2', // Vẫn giữ trong fillable
         'encrypted_note',
     ];
 
@@ -30,22 +26,22 @@ class Account extends Model
 
     public function familyMembers()
     {
-        // Đảm bảo tên bảng trung gian 'account_family_members'
-        // khớp với tên bảng bạn đã tạo trong migration.
         return $this->belongsToMany(FamilyMember::class, 'account_family_members')
-                    ->withTimestamps();
+            ->withTimestamps();
+    }
+
+    public function socialnetworkDetail()
+    {
+        return $this->hasOne(AccountSocialnetworkDetail::class, 'account_id');
     }
 
     // --- ACCESSORS ĐỂ GIẢI MÃ ---
     public function getUsernameAttribute()
     {
         try {
-            // CẢNH BÁO: Crypt::decryptString() mặc định dùng APP_KEY.
-            // Cần cơ chế dùng khóa giải mã riêng của từng FamilyMember cho ứng dụng thực tế.
             return Crypt::decryptString($this->attributes['encrypted_username']);
         } catch (DecryptException $e) {
-            // Log lỗi nếu cần: Log::error("Lỗi giải mã username cho Account ID {$this->id}: " . $e->getMessage());
-            return '[Không thể giải mã]'; 
+            return '[Không thể giải mã]';
         }
     }
 
@@ -57,6 +53,8 @@ class Account extends Model
             return '[Không thể giải mã]';
         }
     }
+
+    // XÓA HÀM getPassword2Attribute() Ở ĐÂY
 
     public function getNoteAttribute()
     {
@@ -70,14 +68,25 @@ class Account extends Model
         }
     }
 
-    /**
-     * Định nghĩa mối quan hệ "hasOne" với model AccountSocialnetworkDetail.
-     * Mỗi tài khoản có thể có một dòng chi tiết mạng xã hội.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
-    public function socialnetworkDetail()
+    // --- MUTATORS ĐỂ MÃ HÓA TRƯỚC KHI LƯU ---
+    public function setUsernameAttribute($value)
     {
-        return $this->hasOne(AccountSocialnetworkDetail::class, 'account_id');
+        $this->attributes['encrypted_username'] = Crypt::encryptString($value);
+    }
+
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['encrypted_password'] = Crypt::encryptString($value);
+    }
+
+    // XÓA HÀM setPassword2Attribute() Ở ĐÂY
+
+    public function setNoteAttribute($value)
+    {
+        if ($value !== null) {
+            $this->attributes['encrypted_note'] = Crypt::encryptString($value);
+        } else {
+            $this->attributes['encrypted_note'] = null;
+        }
     }
 }

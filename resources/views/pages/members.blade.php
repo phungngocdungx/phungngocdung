@@ -471,6 +471,90 @@
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        {{-- START: Fields for platforms with social network details (TikTok, VNeID, etc.) --}}
+                        <div id="platform_details_fields" style="display: none;">
+                            <h6 class="mb-3 mt-4" id="platform_details_title">Thông tin chi tiết</h6>
+
+                            {{-- Fields for TikTok (specific to TikTok) --}}
+                            <div id="tiktok_specific_fields" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="add_mail_account_id" class="form-label">Email liên kết (nếu có)</label>
+                                    <select
+                                        class="form-select @error('mail_account_id', 'storeAccount') is-invalid @enderror"
+                                        id="add_mail_account_id" name="mail_account_id">
+                                        <option value="" selected>-- Chọn email --</option>
+                                        @if (isset($mailAccounts) && $mailAccounts->count() > 0)
+                                            @foreach ($mailAccounts as $mailAccount)
+                                                <option value="{{ $mailAccount->id }}"
+                                                    {{ old('mail_account_id') == $mailAccount->id ? 'selected' : '' }}>
+                                                    {{ $mailAccount->email }}
+                                                </option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                    @error('mail_account_id', 'storeAccount')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label for="add_tiktok_user_id" class="form-label">ID Người dùng TikTok</label>
+                                    <input type="text"
+                                        class="form-control @error('tiktok_user_id', 'storeAccount') is-invalid @enderror"
+                                        id="add_tiktok_user_id" name="tiktok_user_id"
+                                        value="{{ old('tiktok_user_id') }}">
+                                    @error('tiktok_user_id', 'storeAccount')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label for="add_follower_count" class="form-label">Số lượng người theo dõi</label>
+                                    <input type="number"
+                                        class="form-control @error('follower_count', 'storeAccount') is-invalid @enderror"
+                                        id="add_follower_count" name="follower_count"
+                                        value="{{ old('follower_count', 0) }}" min="0">
+                                    @error('follower_count', 'storeAccount')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                {{-- Trạng thái tài khoản cho TikTok (đã di chuyển vào đây) --}}
+                                <div class="mb-3">
+                                    <label for="add_status" class="form-label">Trạng thái tài khoản</label>
+                                    <select class="form-select @error('status', 'storeAccount') is-invalid @enderror"
+                                        id="add_status" name="status">
+                                        <option value="active"
+                                            {{ old('status', 'active') == 'active' ? 'selected' : '' }}>Active</option>
+                                        <option value="locked" {{ old('status') == 'locked' ? 'selected' : '' }}>Locked
+                                        </option>
+                                        <option value="banned" {{ old('status') == 'banned' ? 'selected' : '' }}>Banned
+                                        </option>
+                                    </select>
+                                    @error('status', 'storeAccount')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div> {{-- End tiktok_specific_fields --}}
+
+                            {{-- Fields for VNeID (specific to VNeID - chỉ có encrypted_password_2) --}}
+                            <div id="vneid_specific_fields" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="encrypted_password_2" class="form-label">Mật khẩu cấp 2 (VNeID)</label>
+                                    <div class="input-group">
+                                        <input type="password"
+                                            class="form-control @error('encrypted_password_2', 'storeAccount') is-invalid @enderror"
+                                            id="encrypted_password_2" name="encrypted_password_2" value="{{ old('encrypted_password_2') }}"
+                                            autocomplete="new-password">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                            id="toggleAddPassword2"><i class="fas fa-eye"></i></button>
+                                    </div>
+                                    @error('encrypted_password_2', 'storeAccount')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div> {{-- End vneid_specific_fields --}}
+
+                        </div> {{-- END: platform_details_fields --}}
+
                         @if (isset($allFamilyMembers) && $allFamilyMembers->count() > 0)
                             <div class="mb-3">
                                 <label for="add_family_member_id_for_add_form" class="form-label">Gán cho
@@ -823,6 +907,7 @@
                 console.warn('JS Warning: Modal #verifyPinModal hoặc Bootstrap JS chưa sẵn sàng.');
             }
 
+
             // =================================================================================
             // KHỐI XỬ LÝ CHO MODAL SỬA TÀI KHOẢN (editAccountModal) - Đã cập nhật
             // =================================================================================
@@ -1069,221 +1154,285 @@
                 /* ... console.warn ... */
             }
 
+
             // =================================================================================
-            // KHỐI 3: XỬ LÝ CHO MODAL THÊM MỚI TÀI KHOẢN (addAccountModal) - ĐÃ CẬP NHẬT
+            // KHỐI XỬ LÝ CHO MODAL THÊM MỚI TÀI KHOẢN (addAccountModal) - HỢP NHẤT VÀ SỬA LỖI TRÙNG LẶP
             // =================================================================================
-            const addAccountModalElement = document.getElementById('addAccountModal');
-            if (addAccountModalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                // const addAccountModal = new bootstrap.Modal(addAccountModalElement); // Không cần nếu chỉ dùng data-bs-* để mở
+            const addAccountModalElement = document.getElementById('addAccountModal'); // Lấy biến modal element
 
-                // Nút hiện/ẩn pass trong modal THÊM
-                const toggleAddPasswordButton = document.getElementById('toggleAddPassword');
-                const addPasswordField = document.getElementById('add_password');
-                if (toggleAddPasswordButton && addPasswordField) {
-                    toggleAddPasswordButton.addEventListener('click', function() {
-                        const type = addPasswordField.getAttribute('type') === 'password' ? 'text' :
-                            'password';
-                        addPasswordField.setAttribute('type', type);
-                        const icon = this.querySelector('i.fas');
-                        if (icon) {
-                            icon.classList.toggle('fa-eye');
-                            icon.classList.toggle('fa-eye-slash');
-                        }
-                    });
-                }
+            // CHỈ KHAI BÁO CÁC BIẾN NÀY MỘT LẦN TRONG KHỐI NÀY
+            const addPlatformSelect = document.getElementById('add_platform_id');
+            const platformDetailsFields = document.getElementById('platform_details_fields');
+            const platformDetailsTitle = document.getElementById('platform_details_title');
+            const tiktokSpecificFields = document.getElementById('tiktok_specific_fields');
+            const vneidSpecificFields = document.getElementById('vneid_specific_fields');
+            const addStatusField = document.getElementById(
+            'add_status'); // Trường status chung (đã có trong tiktok_specific_fields)
 
-                // Logic cho form thêm Platform mới bên trong addAccountModal
-                const btnToggleNewPlatformForm = document.getElementById('btnToggleNewPlatformForm');
-                const newPlatformFormContainer = document.getElementById('newPlatformFormContainer');
-                const btnCancelNewPlatform = document.getElementById('btnCancelNewPlatform');
-                const btnSaveNewPlatformAjax = document.getElementById('btnSaveNewPlatformAjax');
-
-                const platformSelectForAddModal = document.getElementById('add_platform_id');
-                const platformSelectForEditModal = document.getElementById(
-                    'edit_platform_id'); // Để cập nhật cả dropdown ở modal sửa
-
-                const ajaxNewPlatformErrorsDiv = document.getElementById('ajaxNewPlatformErrors');
-                const ajaxNewPlatformSuccessDiv = document.getElementById('ajaxNewPlatformSuccess');
-
-                if (btnToggleNewPlatformForm && newPlatformFormContainer) {
-                    btnToggleNewPlatformForm.addEventListener('click', function() {
-                        const isHidden = newPlatformFormContainer.style.display === 'none' ||
-                            newPlatformFormContainer.style.display === '';
-                        newPlatformFormContainer.style.display = isHidden ? 'block' : 'none';
-                        if (ajaxNewPlatformErrorsDiv) {
-                            ajaxNewPlatformErrorsDiv.innerHTML = '';
-                            ajaxNewPlatformErrorsDiv.style.display = 'none';
-                        }
-                        if (ajaxNewPlatformSuccessDiv) {
-                            ajaxNewPlatformSuccessDiv.innerHTML = '';
-                            ajaxNewPlatformSuccessDiv.style.display = 'none';
-                        }
-                    });
-                }
-
-                if (btnCancelNewPlatform && newPlatformFormContainer) {
-                    btnCancelNewPlatform.addEventListener('click', function() {
-                        newPlatformFormContainer.style.display = 'none';
-                        if (ajaxNewPlatformErrorsDiv) {
-                            ajaxNewPlatformErrorsDiv.innerHTML = '';
-                            ajaxNewPlatformErrorsDiv.style.display = 'none';
-                        }
-                        if (ajaxNewPlatformSuccessDiv) {
-                            ajaxNewPlatformSuccessDiv.innerHTML = '';
-                            ajaxNewPlatformSuccessDiv.style.display = 'none';
-                        }
-                        document.getElementById('ajax_new_platform_name').value = '';
-                        document.getElementById('ajax_new_platform_description').value = '';
-                        document.getElementById('ajax_new_platform_logo_path').value = '';
-                    });
-                }
-
-                if (btnSaveNewPlatformAjax) {
-                    btnSaveNewPlatformAjax.addEventListener('click', function() {
-                        const name = document.getElementById('ajax_new_platform_name').value.trim();
-                        const description = document.getElementById('ajax_new_platform_description').value
-                            .trim();
-                        const logo_path = document.getElementById('ajax_new_platform_logo_path').value
-                            .trim();
-
-                        if (!name) {
-                            if (ajaxNewPlatformErrorsDiv) {
-                                ajaxNewPlatformErrorsDiv.textContent =
-                                    'Tên nền tảng mới không được để trống.';
-                                ajaxNewPlatformErrorsDiv.style.display = 'block';
-                            }
-                            return;
-                        }
-                        if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv.style.display = 'none';
-                        if (ajaxNewPlatformSuccessDiv) ajaxNewPlatformSuccessDiv.style.display = 'none';
-
-                        this.disabled = true;
-                        this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Lưu...';
-                        if (!csrfToken) {
-                            console.error('CSRF Token missing!'); /*...*/
-                            this.disabled = false;
-                            this.innerHTML = 'Lưu Nền tảng';
-                            return;
-                        }
-
-                        fetch('{{ route('accounts.platforms.storeAjax') }}', { // Bạn cần tạo route và controller này
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': csrfToken,
-                                    'Accept': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    name,
-                                    description,
-                                    logo_path
-                                })
-                            })
-                            .then(response => {
-                                if (response.status === 422) {
-                                    return response.json().then(err => Promise.reject({
-                                        validationErrors: err.errors
-                                    }));
-                                }
-                                if (!response.ok) {
-                                    return response.json().then(err => Promise.reject(err || {
-                                        message: 'Lỗi server.'
-                                    }));
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                if (data.success && data.platform) {
-                                    if (ajaxNewPlatformSuccessDiv) {
-                                        ajaxNewPlatformSuccessDiv.textContent =
-                                            `Đã thêm: ${data.platform.name}`;
-                                        ajaxNewPlatformSuccessDiv.style.display = 'block';
-                                    }
-
-                                    const newOption = new Option(data.platform.name, data.platform.id);
-                                    if (platformSelectForAddModal) {
-                                        platformSelectForAddModal.add(newOption.cloneNode(true));
-                                        platformSelectForAddModal.value = data.platform
-                                            .id; // Tự động chọn platform vừa thêm
-                                    }
-                                    if (platformSelectForEditModal) { // Cập nhật cả dropdown trong modal sửa nếu nó tồn tại
-                                        platformSelectForEditModal.add(newOption.cloneNode(true));
-                                    }
-
-                                    // Reset form nhỏ và ẩn đi sau 2 giây
-                                    setTimeout(() => {
-                                        if (newPlatformFormContainer) newPlatformFormContainer
-                                            .style.display = 'none';
-                                        document.getElementById('ajax_new_platform_name')
-                                            .value = '';
-                                        document.getElementById('ajax_new_platform_description')
-                                            .value = '';
-                                        document.getElementById('ajax_new_platform_logo_path')
-                                            .value = '';
-                                        if (ajaxNewPlatformSuccessDiv) ajaxNewPlatformSuccessDiv
-                                            .style.display = 'none';
-                                    }, 2000);
-
-                                } else {
-                                    let errorMsg = data.message || 'Không thể thêm platform.';
-                                    if (data.errors) { // Nếu server trả về lỗi validation cụ thể
-                                        errorMsg = '<ul>';
-                                        for (const field in data.errors) {
-                                            data.errors[field].forEach(message => errorMsg +=
-                                                `<li>${message}</li>`);
-                                        }
-                                        errorMsg += '</ul>';
-                                        if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv
-                                            .innerHTML = errorMsg;
-                                        else console.error(errorMsg);
-                                    } else {
-                                        if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv
-                                            .textContent = errorMsg;
-                                        else console.error(errorMsg);
-                                    }
-                                    if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv.style
-                                        .display = 'block';
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Lỗi Tạo Platform Mới:', error);
-                                let errorMsgText = 'Lỗi không xác định.';
-                                if (error.validationErrors) {
-                                    errorMsgText = '<ul>';
-                                    for (const field in error.validationErrors) {
-                                        error.validationErrors[field].forEach(message => errorMsgText +=
-                                            `<li>${message}</li>`);
-                                    }
-                                    errorMsgText += '</ul>';
-                                    if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv.innerHTML =
-                                        errorMsgText;
-                                    else console.error(errorMsgText);
-                                } else if (error.message) {
-                                    errorMsgText = error.message;
-                                    if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv.textContent =
-                                        errorMsgText;
-                                    else console.error(errorMsgText);
-                                }
-                                if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv.style.display =
-                                    'block';
-                            })
-                            .finally(() => {
-                                this.disabled = false;
-                                this.innerHTML = 'Lưu Nền tảng';
-                            });
-                    });
-                }
-
-                // Xử lý hiển thị lại modal Thêm Mới nếu có lỗi validation từ submit non-AJAX
-                @if (isset($errors) && $errors->storeAccount && $errors->storeAccount->any())
-                    var addModalInstanceForErrors = new bootstrap.Modal(document.getElementById('addAccountModal'));
-                    if (addModalInstanceForErrors) addModalInstanceForErrors.show();
-                @endif
-
-            } else {
-                console.warn('JS Warning: Modal #addAccountModal hoặc Bootstrap JS chưa sẵn sàng.');
+            // Nút hiện/ẩn pass trong modal THÊM (mật khẩu chính)
+            const toggleAddPasswordButton = document.getElementById('toggleAddPassword');
+            const addPasswordField = document.getElementById('add_password');
+            if (toggleAddPasswordButton && addPasswordField) {
+                toggleAddPasswordButton.addEventListener('click', function() {
+                    const type = addPasswordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                    addPasswordField.setAttribute('type', type);
+                    const icon = this.querySelector('i.fas');
+                    if (icon) {
+                        icon.classList.toggle('fa-eye');
+                        icon.classList.toggle('fa-eye-slash');
+                    }
+                });
             }
 
+            // Nút hiện/ẩn mật khẩu cấp 2 trong modal THÊM (cho VNeID)
+            const toggleAddPassword2Button = document.getElementById('toggleAddPassword2');
+            const addPassword2Field = document.getElementById('encrypted_password_2');
+            if (toggleAddPassword2Button && addPassword2Field) {
+                toggleAddPassword2Button.addEventListener('click', function() {
+                    const type = addPassword2Field.getAttribute('type') === 'password' ? 'text' :
+                    'password';
+                    addPassword2Field.setAttribute('type', type);
+                    const icon = this.querySelector('i.fas');
+                    if (icon) {
+                        icon.classList.toggle('fa-eye');
+                        icon.classList.toggle('fa-eye-slash');
+                    }
+                });
+            }
+
+            // Hàm để bật/tắt hiển thị các trường chi tiết cụ thể cho từng nền tảng (Đã sửa lại)
+            function togglePlatformSpecificFieldsForAddModal() {
+                const selectedPlatformId = addPlatformSelect.value;
+
+                // Ẩn tất cả các khối chi tiết và tiêu đề trước
+                if (platformDetailsFields) platformDetailsFields.style.display = 'none';
+                if (tiktokSpecificFields) tiktokSpecificFields.style.display = 'none';
+                if (vneidSpecificFields) vneidSpecificFields.style.display = 'none';
+
+                // Reset các giá trị của các trường cụ thể khi chúng bị ẩn
+                const mailAccountIdInput = document.getElementById('add_mail_account_id');
+                const tiktokUserIdInput = document.getElementById('add_tiktok_user_id');
+                const followerCountInput = document.getElementById('add_follower_count');
+                const password2Input = document.getElementById('encrypted_password_2');
+                const lastLoginIpInput = document.getElementById('add_last_login_ip');
+                const statusSelect = document.getElementById('add_status');
+
+                if (mailAccountIdInput) mailAccountIdInput.value = '';
+                if (tiktokUserIdInput) tiktokUserIdInput.value = '';
+                if (followerCountInput) followerCountInput.value = '0';
+                if (password2Input) password2Input.value = '';
+                if (lastLoginIpInput) lastLoginIpInput.value = ''; // VNeID không có IP, nhưng vẫn reset nếu có
+                if (statusSelect) statusSelect.value = 'active'; // Reset status to default
+
+                // Hiển thị các khối chi tiết và trường cụ thể dựa trên nền tảng đã chọn
+                if (selectedPlatformId === '6') { // TikTok
+                    if (platformDetailsFields) platformDetailsFields.style.display = 'block';
+                    if (platformDetailsTitle) platformDetailsTitle.textContent = 'Thông tin chi tiết TikTok';
+                    if (tiktokSpecificFields) tiktokSpecificFields.style.display = 'block';
+                    // Trường status được chứa trong tiktok_specific_fields nên sẽ tự hiển thị
+                } else if (selectedPlatformId === '3') { // VNeID
+                    if (platformDetailsFields) platformDetailsFields.style.display = 'block';
+                    if (platformDetailsTitle) platformDetailsTitle.textContent = 'Thông tin chi tiết VNeID';
+                    if (vneidSpecificFields) vneidSpecificFields.style.display = 'block';
+                    // VNeID chỉ có encrypted_password_2, không có status hay last_login_ip theo yêu cầu mới.
+                }
+                // Các nền tảng khác không có chi tiết đặc biệt thì platformDetailsFields vẫn ẩn
+            }
+
+            // Chỉ gắn listener nếu addPlatformSelect tồn tại
+            if (addPlatformSelect) {
+                togglePlatformSpecificFieldsForAddModal(); // Kiểm tra ban đầu khi trang tải
+                addPlatformSelect.addEventListener('change',
+                togglePlatformSpecificFieldsForAddModal); // Lắng nghe thay đổi
+            }
+
+            // Logic cho form thêm Platform mới bên trong addAccountModal (Giữ nguyên từ code bạn cung cấp)
+            const btnToggleNewPlatformForm = document.getElementById('btnToggleNewPlatformForm');
+            const newPlatformFormContainer = document.getElementById('newPlatformFormContainer');
+            const btnCancelNewPlatform = document.getElementById('btnCancelNewPlatform');
+            const btnSaveNewPlatformAjax = document.getElementById('btnSaveNewPlatformAjax');
+
+            const platformSelectForAddModal = document.getElementById(
+            'add_platform_id'); // Khai báo lại cho rõ ràng trong khối này
+            const platformSelectForEditModal = document.getElementById('edit_platform_id');
+
+            const ajaxNewPlatformErrorsDiv = document.getElementById('ajaxNewPlatformErrors');
+            const ajaxNewPlatformSuccessDiv = document.getElementById('ajaxNewPlatformSuccess');
+
+            if (btnToggleNewPlatformForm && newPlatformFormContainer) {
+                btnToggleNewPlatformForm.addEventListener('click', function() {
+                    const isHidden = newPlatformFormContainer.style.display === 'none' ||
+                        newPlatformFormContainer.style.display === '';
+                    newPlatformFormContainer.style.display = isHidden ? 'block' : 'none';
+                    if (ajaxNewPlatformErrorsDiv) {
+                        ajaxNewPlatformErrorsDiv.innerHTML = '';
+                        ajaxNewPlatformErrorsDiv.style.display = 'none';
+                    }
+                    if (ajaxNewPlatformSuccessDiv) {
+                        ajaxNewPlatformSuccessDiv.innerHTML = '';
+                        ajaxNewPlatformSuccessDiv.style.display = 'none';
+                    }
+                });
+            }
+
+            if (btnCancelNewPlatform && newPlatformFormContainer) {
+                btnCancelNewPlatform.addEventListener('click', function() {
+                    newPlatformFormContainer.style.display = 'none';
+                    if (ajaxNewPlatformErrorsDiv) {
+                        ajaxNewPlatformErrorsDiv.innerHTML = '';
+                        ajaxNewPlatformErrorsDiv.style.display = 'none';
+                    }
+                    if (ajaxNewPlatformSuccessDiv) {
+                        ajaxNewPlatformSuccessDiv.innerHTML = '';
+                        ajaxNewPlatformSuccessDiv.style.display = 'none';
+                    }
+                    document.getElementById('ajax_new_platform_name').value = '';
+                    document.getElementById('ajax_new_platform_description').value = '';
+                    document.getElementById('ajax_new_platform_logo_path').value = '';
+                });
+            }
+
+            if (btnSaveNewPlatformAjax) {
+                btnSaveNewPlatformAjax.addEventListener('click', function() {
+                    const name = document.getElementById('ajax_new_platform_name').value.trim();
+                    const description = document.getElementById('ajax_new_platform_description').value
+                        .trim();
+                    const logo_path = document.getElementById('ajax_new_platform_logo_path').value
+                        .trim();
+
+                    if (!name) {
+                        if (ajaxNewPlatformErrorsDiv) {
+                            ajaxNewPlatformErrorsDiv.textContent =
+                                'Tên nền tảng mới không được để trống.';
+                            ajaxNewPlatformErrorsDiv.style.display = 'block';
+                        }
+                        return;
+                    }
+                    if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv.style.display = 'none';
+                    if (ajaxNewPlatformSuccessDiv) ajaxNewPlatformSuccessDiv.style.display = 'none';
+
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Lưu...';
+                    if (!csrfToken) {
+                        console.error('CSRF Token missing!');
+                        this.disabled = false;
+                        this.innerHTML = 'Lưu Nền tảng';
+                        return;
+                    }
+
+                    fetch('{{ route('accounts.platforms.storeAjax') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                name,
+                                description,
+                                logo_path
+                            })
+                        })
+                        .then(response => {
+                            if (response.status === 422) {
+                                return response.json().then(err => Promise.reject({
+                                    validationErrors: err.errors
+                                }));
+                            }
+                            if (!response.ok) {
+                                return response.json().then(err => Promise.reject(err || {
+                                    message: 'Lỗi server.'
+                                }));
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success && data.platform) {
+                                if (ajaxNewPlatformSuccessDiv) {
+                                    ajaxNewPlatformSuccessDiv.textContent =
+                                        `Đã thêm: ${data.platform.name}`;
+                                    ajaxNewPlatformSuccessDiv.style.display = 'block';
+                                }
+
+                                const newOption = new Option(data.platform.name, data.platform.id);
+                                if (platformSelectForAddModal) {
+                                    platformSelectForAddModal.add(newOption.cloneNode(true));
+                                    platformSelectForAddModal.value = data.platform
+                                        .id; // Tự động chọn platform vừa thêm
+                                }
+                                if (platformSelectForEditModal) { // Cập nhật cả dropdown trong modal sửa nếu nó tồn tại
+                                    platformSelectForEditModal.add(newOption.cloneNode(true));
+                                }
+
+                                // Reset form nhỏ và ẩn đi sau 2 giây
+                                setTimeout(() => {
+                                    if (newPlatformFormContainer) newPlatformFormContainer
+                                        .style.display = 'none';
+                                    document.getElementById('ajax_new_platform_name')
+                                        .value = '';
+                                    document.getElementById('ajax_new_platform_description')
+                                        .value = '';
+                                    document.getElementById('ajax_new_platform_logo_path')
+                                        .value = '';
+                                    if (ajaxNewPlatformSuccessDiv) ajaxNewPlatformSuccessDiv
+                                        .style.display = 'none';
+                                }, 2000);
+
+                            } else {
+                                let errorMsg = data.message || 'Không thể thêm platform.';
+                                if (data.errors) { // Nếu server trả về lỗi validation cụ thể
+                                    errorMsg = '<ul>';
+                                    for (const field in data.errors) {
+                                        data.errors[field].forEach(message => errorMsg +=
+                                            `<li>${message}</li>`);
+                                    }
+                                    errorMsg += '</ul>';
+                                    if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv
+                                        .innerHTML = errorMsg;
+                                    else console.error(errorMsg);
+                                } else {
+                                    if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv
+                                        .textContent = errorMsg;
+                                    else console.error(errorMsg);
+                                }
+                                if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv.style
+                                    .display = 'block';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Lỗi Tạo Platform Mới:', error);
+                            let errorMsgText = 'Lỗi không xác định.';
+                            if (error.validationErrors) {
+                                errorMsgText = '<ul>';
+                                for (const field in error.validationErrors) {
+                                    error.validationErrors[field].forEach(message => errorMsgText +=
+                                        `<li>${message}</li>`);
+                                }
+                                errorMsgText += '</ul>';
+                                if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv.innerHTML =
+                                    errorMsgText;
+                                else console.error(errorMsgText);
+                            } else if (error.message) {
+                                errorMsgText = error.message;
+                                if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv.textContent =
+                                    errorMsgText;
+                                else console.error(errorMsgText);
+                            }
+                            if (ajaxNewPlatformErrorsDiv) ajaxNewPlatformErrorsDiv.style.display =
+                                'block';
+                        })
+                        .finally(() => {
+                            this.disabled = false;
+                            this.innerHTML = 'Lưu Nền tảng';
+                        });
+                });
+            }
+
+            // Xử lý hiển thị lại modal Thêm Mới nếu có lỗi validation từ submit non-AJAX
+            @if (isset($errors) && $errors->storeAccount && $errors->storeAccount->any())
+                var addModalInstanceForErrors = new bootstrap.Modal(document.getElementById('addAccountModal'));
+                if (addModalInstanceForErrors) addModalInstanceForErrors.show();
+            @endif
         });
     </script>
 @endsection

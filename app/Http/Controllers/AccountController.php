@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Platform;
+use App\Models\MailAccount;
 use App\Models\FamilyMember;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreAccountRequest;
+use App\Models\AccountSocialnetworkDetail;
 use App\Http\Requests\UpdateAccountRequest;
 
 class AccountController extends Controller
@@ -68,12 +70,14 @@ class AccountController extends Controller
         // Lấy các dữ liệu phụ cần cho các modal (Thêm, Sửa)
         $platforms = Platform::orderBy('name')->get();
         $allFamilyMembers = FamilyMember::orderBy('name')->get();
+        $mailAccounts = MailAccount::all();
         // dd($tiktokAccounts);
         return view('pages.members', compact(
             'otherAccounts',
             'tiktokAccounts',
             'platforms',
-            'allFamilyMembers'
+            'allFamilyMembers',
+            'mailAccounts'
             // Các biến khác nếu cần
         ));
     }
@@ -100,43 +104,100 @@ class AccountController extends Controller
     // Trong app/Http/Controllers/AccountController.php
     // ... (use statements và các phương thức khác) ...
 
-    public function store(StoreAccountRequest $request) // Form Request sẽ validate cả family_member_id
+    public function store(StoreAccountRequest $request)
     {
+        // dd($request);
         $validatedData = $request->validated();
 
-        // Lấy FamilyMember dựa trên family_member_id từ form đã validate
         $assignToFamilyMember = FamilyMember::find($validatedData['family_member_id']);
 
         if (!$assignToFamilyMember) {
-            // Dù StoreAccountRequest đã check exists, đây là một lớp phòng vệ nữa
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['family_member_id' => 'Người dùng được chọn không hợp lệ hoặc không tìm thấy.'], 'storeAccount');
         }
 
-        // CẢNH BÁO MÃ HÓA: Vẫn là vấn đề dùng APP_KEY. Cần thay bằng khóa riêng của người dùng.
         try {
             $account = new Account();
             $account->platform_id = $validatedData['platform_id'];
-            $account->encrypted_username = Crypt::encryptString($validatedData['username']);
-            $account->encrypted_password = Crypt::encryptString($validatedData['password']);
-            if (isset($validatedData['note'])) {
-                $account->encrypted_note = Crypt::encryptString($validatedData['note']);
+            $account->username = $validatedData['username']; // Mutator vẫn hoạt động cho username
+            $account->password = $validatedData['password']; // Mutator vẫn hoạt động cho password
+            $account->note = $validatedData['note'] ?? null; // Mutator vẫn hoạt động cho note
+
+            // Xử lý encrypted_password_2 cho VNeID (thủ công)
+            if ($validatedData['platform_id'] == 3 && isset($validatedData['encrypted_password_2'])) {
+                $account->encrypted_password_2 = Crypt::encryptString($validatedData['encrypted_password_2']);
             } else {
-                $account->encrypted_note = null;
+                $account->encrypted_password_2 = null; // Đảm bảo là null nếu không phải VNeID
             }
-            // Không cần gán family_member_id trực tiếp vào $account nếu bạn dùng bảng trung gian.
+
             $account->save();
 
-            // Liên kết account này với family member đã chọn
             $account->familyMembers()->attach($assignToFamilyMember->id);
+
+            // Logic để tạo AccountSocialnetworkDetail (chỉ khi là TikTok)
+            if ($validatedData['platform_id'] == 6) {
+                $socialNetworkDetail = new AccountSocialnetworkDetail();
+                $socialNetworkDetail->account_id = $account->id;
+
+                // Luôn reset các trường không liên quan để tránh dữ liệu cũ
+                $socialNetworkDetail->mail_account_id = null;
+                $socialNetworkDetail->tiktok_user_id = null;
+                $socialNetworkDetail->follower_count = 0;
+                $socialNetworkDetail->last_login_ip = null;
+                $socialNetworkDetail->status = 'active'; // Reset status về mặc định
+
+                if ($validatedData['platform_id'] == 6) { // TikTok
+                    $socialNetworkDetail->mail_account_id = $validatedData['mail_account_id'] ?? null;
+                    $socialNetworkDetail->tiktok_user_id = $validatedData['tiktok_user_id'];
+                    $socialNetworkDetail->follower_count = $validatedData['follower_count'] ?? 0;
+                    $socialNetworkDetail->status = $validatedData['status'] ?? 'active';
+                } elseif ($validatedData['platform_id'] == 3) { // VNeID
+                    // VNeID không có các trường này trong social_network_details theo yêu cầu mới.
+                    $socialNetworkDetail->status = 'active'; // Đảm bảo có giá trị vì cột NOT NULL
+                }
+
+                $socialNetworkDetail->save();
+            }
 
             return redirect()->route('accounts.index')->with('success', 'Tài khoản đã được thêm thành công cho ' . $assignToFamilyMember->name . '!');
         } catch (\Exception $e) {
-            // \Log::error("Lỗi khi tạo tài khoản: " . $e->getMessage());
+            Log::error("Lỗi khi tạo tài khoản: " . $e->getMessage());
+            if (isset($account->id)) {
+                $account->delete();
+            }
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['error' => 'Đã có lỗi xảy ra khi thêm tài khoản. Vui lòng thử lại.'], 'storeAccount');
+        }
+    }
+
+    public function storeAjax(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255|unique:platforms,name',
+            'description' => 'nullable|string|max:1000',
+            'logo_path' => 'nullable|sometimes|url|max:2048',
+        ], [
+            'name.required' => 'Tên nền tảng không được để trống.',
+            'name.unique' => 'Tên nền tảng này đã tồn tại.',
+            'logo_path.url' => 'Đường dẫn logo phải là một URL hợp lệ.'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Dữ liệu không hợp lệ.', 'errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $platform = Platform::create($validator->validated());
+            return response()->json([
+                'success' => true,
+                'platform' => $platform, // Trả về platform vừa tạo
+                'message' => 'Thêm nền tảng thành công!'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi tạo platform AJAX: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Lỗi server khi thêm nền tảng.'], 500);
         }
     }
 
@@ -249,35 +310,6 @@ class AccountController extends Controller
         }
     }
 
-    public function storeAjax(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:platforms,name',
-            'description' => 'nullable|string|max:1000',
-            'logo_path' => 'nullable|sometimes|url|max:2048',
-        ], [
-            'name.required' => 'Tên nền tảng không được để trống.',
-            'name.unique' => 'Tên nền tảng này đã tồn tại.',
-            'logo_path.url' => 'Đường dẫn logo phải là một URL hợp lệ.'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => 'Dữ liệu không hợp lệ.', 'errors' => $validator->errors()], 422);
-        }
-
-        try {
-            $platform = Platform::create($validator->validated());
-            return response()->json([
-                'success' => true,
-                'platform' => $platform, // Trả về platform vừa tạo
-                'message' => 'Thêm nền tảng thành công!'
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Lỗi tạo platform AJAX: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Lỗi server khi thêm nền tảng.'], 500);
-        }
-    }
-
     public function showAccTT(Request $request)
     {
         // Lấy ra tất tài khoản có phatform_id = 6
@@ -286,7 +318,7 @@ class AccountController extends Controller
             ->orderByDesc('updated_at')
             ->paginate(15);
 
-        dd($accounts);
+        // dd($accounts);
         return view('apps.account.tiktok.index', compact('accounts'));
     }
 }
