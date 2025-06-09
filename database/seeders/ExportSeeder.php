@@ -18,22 +18,25 @@ class ExportSeeder extends Seeder
 
         // Danh sách bảng và thư mục lưu trữ
         $tables = [
+            // Danh sách bảng ưu tiên
             'users' => 'Users',
             'permissions' => 'Permissions',
-            'users_profiles' => 'UsersProfiles',
-            'user_details' => 'UserDetails',
-            'categories' => 'Categories',
-            'products' => 'Products',
             'roles' => 'Roles',
-            'model_has_roles' => 'ModelHasRoles',
-            'role_has_permissions' => 'RoleHasPermissions',
-            'mail_accounts' => 'MailAccounts',
-            'emails' => 'Emails',
+            'categories' => 'Categories',
             'platforms' => 'Platforms',
             'family_members' => 'FamilyMembers',
-            'accounts' => 'Accounts',
-            'account_family_members' => 'AccountFamilyMembers',
+            'mail_accounts' => 'MailAccounts',
             'application_settings' => 'ApplicationSettings',
+            // Import các bảng khác
+            'users_profiles' => 'UsersProfiles',
+            'user_details' => 'UserDetails',
+            'products' => 'Products',
+            'accounts' => 'Accounts',
+            'emails' => 'Emails',
+            'model_has_roles' => 'ModelHasRoles',
+            'role_has_permissions' => 'RoleHasPermissions',
+            'account_family_members' => 'AccountFamilyMembers',
+            'account_socialnetwork_details' => 'AccountSocialNetworkDetails',
         ];
         
         foreach ($tables as $table => $folder) {
