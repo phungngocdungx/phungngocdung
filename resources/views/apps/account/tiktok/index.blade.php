@@ -34,13 +34,8 @@
             {{-- NAV TABS - ĐIỀU HƯỚNG GIỮA CÁC TAB --}}
             {{-- =============================================== --}}
             <ul class="nav nav-tabs" id="accountTabs" role="tablist">
-                <h4>Mật khẩu tất cả tài khoản: Dung2708@</h4>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tiktok-accounts-tab" data-bs-toggle="tab"
-                        data-bs-target="#tiktok-accounts-pane" type="button" role="tab"
-                        aria-controls="tiktok-accounts-pane" aria-selected="false">
-                        Accounts TikTok
-                    </button>
+                    <h4>Mật khẩu tất cả tài khoản: Dung2708@</h4>
                 </li>
             </ul>
 
@@ -97,8 +92,15 @@
                                                 </button>
                                             </td>
                                             <td class="text-end align-middle white-space-nowrap">
+                                                @php
+                                                    $isInactive =
+                                                        isset($account->socialnetworkDetail) &&
+                                                        $account->socialnetworkDetail->status !== 'active';
+                                                @endphp
+
                                                 <button class="btn btn-success"
-                                                    onclick="window.location.href='{{ url('/emails?account_id=' . $account->socialnetworkDetail->mail_account_id) }}'">
+                                                    {{ $isInactive ? 'style=pointer-events:none;opacity:0.6;' : '' }}
+                                                    {{ $isInactive ? '' : "onclick=window.location.href='" . url('/emails?account_id=' . $account->socialnetworkDetail->mail_account_id) . "'" }}>
                                                     <i class="fas fa-envelope-open-text fa-fw me-2"></i>Lấy mã
                                                 </button>
                                             </td>
