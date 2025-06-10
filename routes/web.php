@@ -28,6 +28,9 @@ Route::get('/tiktok', [AccountController::class, 'showAccTT'])->name('tiktok.ind
 Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');// Admin
 Route::get('/admin/edit/{id}', [AdminController::class, 'edit'])->name('admin.edit');
 Route::post('/admin/update/{id}', [AdminController::class, 'update'])->name('admin.update');
+// Route riêng để phân quyền (nếu bạn muốn modal hoặc chức năng riêng biệt cho phân quyền)
+// Nếu bạn tích hợp vào modal chỉnh sửa chính, route này không cần thiết.
+Route::post('/admin/assign-roles/{id}', [AdminController::class, 'assignRoles'])->name('admin.assign_roles');
 
 Route::get('/manage', [ManageController::class, 'index'])->name('manage.index');// Quản lý tài khoản
 

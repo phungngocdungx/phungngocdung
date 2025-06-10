@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web\Accounts;
 use Throwable;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -14,23 +15,28 @@ class AdminController extends Controller
 {
     public function index(Request $request)
     {
-        $admins = User::role('admin')->get();
+        // Lấy tất cả người dùng, eager load roles để hiển thị vai trò hiện tại
+        $admins = User::with('roles')->get(); //
 
-        // dd($admins);
         return view('apps.account.admin.index', compact('admins'));
     }
 
     public function edit($id)
     {
         try {
-            // Tải eager loading các mối quan hệ userProfile và userDetail
-            $user = User::with('userProfile', 'userDetail')->find($id);
+            // Tải eager loading các mối quan hệ userProfile, userDetail và roles
+            $user = User::with('userProfile', 'userDetail', 'roles')->find($id);
 
             if (!$user) {
                 return response()->json(['message' => 'Không tìm thấy người dùng'], 404);
             }
 
-            // Trả về dữ liệu người dùng, bao gồm thông tin hồ sơ và chi tiết người dùng
+            // Lấy tất cả các vai trò hiện có để hiển thị trong form phân quyền
+            $allRoles = Role::all();
+
+            // Thêm thông tin về tất cả các vai trò vào phản hồi JSON
+            $user->all_roles = $allRoles;
+
             return response()->json($user);
         } catch (Throwable $e) {
             Log::error('Lỗi khi tìm nạp dữ liệu người dùng: ' . $e->getMessage());
@@ -47,17 +53,17 @@ class AdminController extends Controller
                 return response()->json(['message' => 'Không tìm thấy người dùng'], 404);
             }
 
-            // --- Xác thực và cập nhật bảng users ---
+            // --- Cập nhật bảng users ---
             $userValidationRules = [
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
                 'password' => 'nullable|string|min:8|confirmed',
             ];
-            $validatedUserData = $request->validate($userValidationRules); // Sử dụng biến để chứa dữ liệu đã xác thực
+            $validatedUserData = $request->validate($userValidationRules);
 
             $user->name = $validatedUserData['name'];
             $user->email = $validatedUserData['email'];
-            if (!empty($validatedUserData['password'])) { // Kiểm tra nếu mật khẩu có giá trị để cập nhật
+            if (!empty($validatedUserData['password'])) {
                 $user->password = Hash::make($validatedUserData['password']);
             }
             $user->save();
@@ -79,11 +85,8 @@ class AdminController extends Controller
                 'job_title' => 'nullable|string|max:255',
                 'avatar' => 'nullable|string|max:255',
             ];
-            // Chỉ xác thực và lấy dữ liệu có trong request
             $validatedProfileData = $request->validate($profileValidationRules);
-
-            // Chỉ cập nhật các trường nếu chúng tồn tại trong request (người dùng đã gửi chúng)
-            $userProfile->fill($validatedProfileData); // Sử dụng fill với dữ liệu đã xác thực
+            $userProfile->fill($validatedProfileData);
             $userProfile->save();
 
             // --- Cập nhật hoặc tạo bảng user_details ---
@@ -102,26 +105,59 @@ class AdminController extends Controller
                 'working_status' => 'nullable|string|max:255',
                 'shipping_note' => 'nullable|string',
                 'preferred_payment' => 'nullable|string|max:255',
-                'points' => 'nullable|integer',
+                'points' => 'nullable|integer', // Đã sửa từ NOT NULL trong DB dump của bạn
                 'slug' => 'nullable|string|max:255',
                 'status' => 'nullable|string|max:255',
-                'last_login_at' => 'nullable|date', // Đảm bảo định dạng datetime-local phù hợp
+                'last_login_at' => 'nullable|date',
                 'device_info' => 'nullable|string',
             ];
-            $validatedDetailData = $request->validate($detailValidationRules); // Sử dụng biến để chứa dữ liệu đã xác thực
-
-            // Chỉ cập nhật các trường nếu chúng tồn tại trong request
-            $userDetail->fill($validatedDetailData); // Sử dụng fill với dữ liệu đã xác thực
+            $validatedDetailData = $request->validate($detailValidationRules);
+            $userDetail->fill($validatedDetailData);
             $userDetail->save();
 
-            return response()->json(['message' => 'Thông tin người dùng đã được cập nhật thành công'], 200);
+            // --- Cập nhật Vai trò (Roles) ---
+            if ($request->has('roles')) {
+                $user->syncRoles($request->input('roles')); // Gán các vai trò mới cho người dùng
+            } else {
+                $user->syncRoles([]); // Nếu không có vai trò nào được chọn, gỡ bỏ tất cả vai trò
+            }
 
+
+            return response()->json(['message' => 'Thông tin người dùng và vai trò đã được cập nhật thành công'], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Lỗi xác thực khi cập nhật người dùng: ' . json_encode($e->errors()));
             return response()->json(['message' => 'Lỗi xác thực', 'errors' => $e->errors()], 422);
         } catch (Throwable $e) {
             Log::error('Lỗi chung khi cập nhật người dùng: ' . $e->getMessage());
             return response()->json(['message' => 'Đã xảy ra lỗi khi cập nhật dữ liệu.'], 500);
+        }
+    }
+
+    // Phương thức mới để xử lý phân quyền riêng
+    public function assignRoles(Request $request, $id)
+    {
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json(['message' => 'Không tìm thấy người dùng'], 404);
+            }
+
+            $request->validate([
+                'roles' => 'array', // Đảm bảo 'roles' là một mảng
+                'roles.*' => 'exists:roles,name', // Đảm bảo mỗi vai trò tồn tại trong bảng 'roles'
+            ]);
+
+            // Đồng bộ hóa các vai trò cho người dùng
+            $user->syncRoles($request->input('roles', [])); // Nếu 'roles' không có, mặc định là mảng rỗng để xóa hết vai trò
+
+            return response()->json(['message' => 'Phân quyền đã được cập nhật thành công'], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Lỗi xác thực khi phân quyền: ' . json_encode($e->errors()));
+            return response()->json(['message' => 'Lỗi xác thực', 'errors' => $e->errors()], 422);
+        } catch (Throwable $e) {
+            Log::error('Lỗi chung khi phân quyền: ' . $e->getMessage());
+            return response()->json(['message' => 'Đã xảy ra lỗi khi phân quyền.'], 500);
         }
     }
 }

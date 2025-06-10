@@ -4,6 +4,8 @@
 
     <head>
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+            integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     </head>
     <div class="content">
         <h2 class="mb-2 lh-sm">Quản lý tài khoản admin</h2>
@@ -20,7 +22,9 @@
                                     </div>
                                     <div class="col col-md-auto">
                                         <nav class="nav justify-content-end doc-tab-nav align-items-center" role="tablist">
-                                            <a class="btn btn-sm btn-phoenix-primary code-btn ms-2"
+                                            <button class="btn btn-link px-2 text-body copy-code-btn" type="button"><span
+                                                    class="fas fa-copy me-1"></span>Copy
+                                                Code</button><a class="btn btn-sm btn-phoenix-primary code-btn ms-2"
                                                 data-bs-toggle="collapse" href="#example-code" role="button"
                                                 aria-controls="example-code" aria-expanded="false"> <span class="me-2"
                                                     data-feather="code"></span>Phân quyền</a><a
@@ -190,6 +194,11 @@
                                 <button class="nav-link" id="details-tab" data-bs-toggle="tab"
                                     data-bs-target="#details-pane" type="button" role="tab"
                                     aria-controls="details-pane" aria-selected="false">Chi tiết Bổ sung</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="roles-tab" data-bs-toggle="tab"
+                                    data-bs-target="#roles-pane" type="button" role="tab"
+                                    aria-controls="roles-pane" aria-selected="false">Phân quyền</button>
                             </li>
                         </ul>
 
@@ -389,6 +398,12 @@
                                     <textarea class="form-control" id="editDetailDeviceInfo" name="device_info" rows="3"></textarea>
                                 </div>
                             </div>
+
+                            <div class="tab-pane fade" id="roles-pane" role="tabpanel" aria-labelledby="roles-tab">
+                                <p class="mb-3">Chọn (các) vai trò cho người dùng này:</p>
+                                <div id="rolesCheckboxes">
+                                </div>
+                            </div>
                         </div>
 
                         <div class="modal-footer">
@@ -405,6 +420,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
             const editUserForm = document.getElementById('editUserForm');
+            const rolesCheckboxesDiv = document.getElementById('rolesCheckboxes');
 
             // Xử lý nút hiển thị/ẩn mật khẩu
             document.querySelectorAll('.toggle-password').forEach(button => {
@@ -442,29 +458,25 @@
                     fetch(`/admin/edit/${userId}`)
                         .then(response => {
                             if (!response.ok) {
-                                // Cố gắng đọc phản hồi dưới dạng văn bản để gỡ lỗi nếu không phải JSON
                                 return response.text().then(text => {
+                                    console.error('Phản hồi không phải JSON:', text);
                                     try {
-                                        const errorJson = JSON.parse(
-                                            text); // Thử parse JSON
+                                        const errorJson = JSON.parse(text);
                                         throw errorJson;
                                     } catch (e) {
-                                        // Nếu không phải JSON, ném lỗi với văn bản phản hồi
                                         throw new Error(text);
                                     }
                                 });
                             }
-                            return response.json(); // Phản hồi thành công sẽ là JSON
+                            return response.json();
                         })
                         .then(data => {
                             // Điền dữ liệu vào form users
                             document.getElementById('editUserId').value = data.id;
                             document.getElementById('editUserName').value = data.name;
                             document.getElementById('editUserEmail').value = data.email;
-                            document.getElementById('editUserPassword').value =
-                                ''; // Luôn xóa mật khẩu
-                            document.getElementById('editUserPasswordConfirmation').value =
-                                ''; // Luôn xóa xác nhận mật khẩu
+                            document.getElementById('editUserPassword').value = '';
+                            document.getElementById('editUserPasswordConfirmation').value = '';
 
                             // Điền dữ liệu vào form users_profiles
                             if (data.user_profile) {
@@ -496,7 +508,6 @@
                                 document.getElementById('editProfileAvatar').value = data
                                     .user_profile.avatar || '';
                             } else {
-                                // Xóa các trường nếu không có profile
                                 editUserForm.querySelectorAll(
                                     '#profile-pane input, #profile-pane textarea, #profile-pane select'
                                 ).forEach(el => el.value = '');
@@ -531,18 +542,18 @@
                                     .user_detail.shipping_note || '';
                                 document.getElementById('editDetailPreferredPayment').value =
                                     data.user_detail.preferred_payment || '';
+                                // Đảm bảo points luôn là số, nếu null hoặc rỗng thì mặc định là 0
                                 document.getElementById('editDetailPoints').value = data
-                                    .user_detail.points || 0;
+                                    .user_detail.points !== null ? data.user_detail.points : 0;
                                 document.getElementById('editDetailSlug').value = data
                                     .user_detail.slug || '';
                                 document.getElementById('editDetailStatus').value = data
                                     .user_detail.status || '';
-                                // Chuyển đổi định dạng datetime-local
                                 if (data.user_detail.last_login_at) {
                                     const lastLoginDate = new Date(data.user_detail
                                         .last_login_at);
                                     const formattedDate = lastLoginDate.toISOString().slice(0,
-                                        16); // YYYY-MM-DDTHH:MM
+                                        16);
                                     document.getElementById('editDetailLastLoginAt').value =
                                         formattedDate;
                                 } else {
@@ -551,21 +562,56 @@
                                 document.getElementById('editDetailDeviceInfo').value = data
                                     .user_detail.device_info || '';
                             } else {
-                                // Xóa các trường nếu không có user_details
                                 editUserForm.querySelectorAll(
                                     '#details-pane input, #details-pane textarea, #details-pane select'
                                 ).forEach(el => el.value = '');
                             }
 
+                            // Điền và chọn các vai trò trong tab "Phân quyền"
+                            rolesCheckboxesDiv.innerHTML = ''; // Xóa các checkbox cũ
+                            if (data.all_roles && data.all_roles.length > 0) {
+                                data.all_roles.forEach(role => {
+                                    const div = document.createElement('div');
+                                    div.classList.add('form-check');
+                                    const input = document.createElement('input');
+                                    input.type = 'checkbox';
+                                    input.classList.add('form-check-input');
+                                    input.id = `role-${role.name}`;
+                                    input.name =
+                                        `roles[]`; // Tên mảng để Laravel nhận mảng các vai trò
+                                    input.value = role.name; // Giá trị là tên vai trò
+
+                                    // Kiểm tra xem người dùng hiện tại có vai trò này không
+                                    if (data.roles.some(userRole => userRole.name ===
+                                            role.name)) {
+                                        input.checked = true;
+                                    }
+
+                                    const label = document.createElement('label');
+                                    label.classList.add('form-check-label');
+                                    label.htmlFor = `role-${role.name}`;
+                                    label.textContent = role.name;
+
+                                    div.appendChild(input);
+                                    div.appendChild(label);
+                                    rolesCheckboxesDiv.appendChild(div);
+                                });
+                            } else {
+                                rolesCheckboxesDiv.innerHTML =
+                                    '<p>Không có vai trò nào được định nghĩa.</p>';
+                            }
+
+
                             editUserModal.show();
                         })
                         .catch(error => {
-                            console.error('Lỗi khi tìm nạp dữ liệu người dùng:', error);
+                            console.error(
+                                'Lỗi khi tìm nạp dữ liệu người dùng (edit button catch):',
+                                error);
                             let errorMessage =
                                 'Không thể tải dữ liệu người dùng. Vui lòng thử lại.';
                             if (error.message && typeof error.message === 'string') {
-                                errorMessage = error
-                                    .message; // Sử dụng thông báo lỗi từ phía máy chủ nếu có
+                                errorMessage = error.message;
                             }
                             alert(errorMessage);
                         });
@@ -576,24 +622,29 @@
             editUserForm.addEventListener('submit', function(event) {
                 event.preventDefault();
                 const userId = document.getElementById('editUserId').value;
-                const formData = new FormData(this); // Lấy tất cả dữ liệu từ form
+                const formData = new FormData(this);
                 const jsonData = {};
 
-                // Chuyển FormData thành JSON Object
+                // Thu thập tất cả dữ liệu từ form, bao gồm cả các checkbox vai trò
                 formData.forEach((value, key) => {
                     // Xử lý các trường ngày/giờ rỗng hoặc không hợp lệ để gửi null
                     if ((key === 'birthday' || key === 'id_issued_date') && value === '') {
                         jsonData[key] = null;
                     } else if (key === 'last_login_at') {
-                        jsonData[key] = value ? new Date(value).toISOString() :
-                            null; // Chuyển đổi thành ISO string nếu có giá trị
+                        jsonData[key] = value ? new Date(value).toISOString() : null;
                     } else {
                         jsonData[key] = value;
                     }
-
                 });
 
-                // Logging để kiểm tra jsonData trước khi gửi
+                // Xử lý riêng các vai trò được chọn từ checkboxes
+                const selectedRoles = [];
+                document.querySelectorAll('#rolesCheckboxes input[name="roles[]"]:checked').forEach(
+                    checkbox => {
+                        selectedRoles.push(checkbox.value);
+                    });
+                jsonData.roles = selectedRoles; // Thêm mảng vai trò vào jsonData
+
                 console.log('Dữ liệu gửi đi:', jsonData);
 
                 fetch(`/admin/update/${userId}`, {
@@ -606,45 +657,37 @@
                         body: JSON.stringify(jsonData)
                     })
                     .then(response => {
-                        // Kiểm tra nếu phản hồi không phải là JSON hoặc có lỗi HTTP
                         if (!response.ok) {
-                            // Cố gắng đọc phản hồi dưới dạng văn bản để gỡ lỗi nếu không phải JSON
                             return response.text().then(text => {
-                                console.error('Phản hồi không phải JSON:',
-                                    text); // Ghi nhật ký toàn bộ phản hồi
+                                console.error('Phản hồi không phải JSON:', text);
                                 try {
-                                    const errorJson = JSON.parse(text); // Thử parse JSON
+                                    const errorJson = JSON.parse(text);
                                     throw errorJson;
                                 } catch (e) {
-                                    // Nếu không phải JSON, ném lỗi với văn bản phản hồi
                                     throw new Error(text);
                                 }
                             });
                         }
-                        return response.json(); // Phản hồi thành công sẽ là JSON
+                        return response.json();
                     })
                     .then(data => {
                         alert(data.message);
                         editUserModal.hide();
-                        location.reload(); // Tải lại trang để thấy thay đổi
+                        location.reload();
                     })
                     .catch(error => {
                         console.error('Lỗi khi cập nhật người dùng (catch block):', error);
                         let errorMessage = 'Đã xảy ra lỗi khi cập nhật dữ liệu.';
 
                         if (error && typeof error === 'object' && error.errors) {
-                            // Lỗi xác thực từ Laravel
                             errorMessage = 'Lỗi xác thực:\n' + Object.values(error.errors).map(e => e
                                 .join(', ')).join('\n');
                         } else if (error && typeof error === 'object' && error.message) {
-                            // Lỗi từ server (có thể là message từ controller của bạn hoặc lỗi chung)
                             errorMessage = error.message;
                         } else if (typeof error === 'string') {
-                            // Lỗi nếu phản hồi không phải JSON và là văn bản thuần túy (ví dụ: trang 404 HTML)
                             errorMessage = 'Phản hồi không mong muốn từ máy chủ:\n' + error.substring(0,
-                                Math.min(error.length, 200)) + '...'; // Chỉ lấy một phần của HTML
+                                Math.min(error.length, 200)) + '...';
                         } else {
-                            // Lỗi không xác định
                             errorMessage = 'Lỗi không xác định xảy ra.';
                         }
                         alert(errorMessage);
