@@ -108,7 +108,7 @@
                                                 </div>
                                             </a>
                                             <h3 class="text-body-highlight">Sign In</h3>
-                                            <p class="text-body-tertiary">Nhận quyền truy cập vào tài khoản của bạn</p>
+                                            <p class="text-body-tertiary">Sign in vào hệ thống của Phùng Ngọc Dũng</p>
                                         </div><button class="btn btn-phoenix-secondary w-100 mb-3"><span
                                                 class="fab fa-google text-danger me-2 fs-9"></span>Sign in with
                                             google</button><button class="btn btn-phoenix-secondary w-100"><span
@@ -174,7 +174,7 @@
                                                 </div>
                                             </div>
                                             <button class="btn btn-primary w-100 mb-3">Sign In</button>
-                                            {{-- <div class="text-center"><a class="fs-9 fw-bold" href="../../../pages/authentication/card/sign-up.html">Create an account</a></div> --}}
+                                            <div class="text-center"><a class="fs-9 fw-bold" href="#!">Chưa có Account liên hệ Zalo - 0965336741</a></div>
                                         </form>
                                     </div>
                                 </div>
