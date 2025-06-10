@@ -25,7 +25,7 @@
                                     </a><!-- more inner pages-->
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ $user->hasRole('manage') ? '#' : 'accounts.index' }}"
+                                    <a class="nav-link" href="{{ $user->hasRole('manage') ? '#' : route('accounts.index') }}"
                                         onclick="{{ $user->hasRole('manage') ? 'return false;' : '' }}"
                                         style="{{ $user->hasRole('manage') ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed;' : '' }}">
                                         <div class="d-flex align-items-center">
@@ -162,7 +162,7 @@
                                             id="nv-customer">
                                             <li class="nav-item">
                                                 <a class="nav-link"
-                                                    href="{{ $user->hasRole('manage') ? '#' : 'admin.index' }}"
+                                                    href="{{ $user->hasRole('manage') ? '#' : route('admin.index') }}"
                                                     onclick="{{ $user->hasRole('manage') ? 'return false;' : '' }}"
                                                     style="{{ $user->hasRole('manage') ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed;' : '' }}">
                                                     <div class="d-flex align-items-center">
