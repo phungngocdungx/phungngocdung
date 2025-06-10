@@ -131,9 +131,9 @@
                                         <ul class="nav collapse parent show" data-bs-parent="#e-commerce"
                                             id="nv-admin">
                                             <li class="nav-item"><a class="nav-link"
-                                                    href="apps/e-commerce/landing/homepage.html">
+                                                    href="{{ route('manage.index') }}">
                                                     <div class="d-flex align-items-center"><span
-                                                            class="nav-link-text">Homepage</span></div>
+                                                            class="nav-link-text">Index</span></div>
                                                 </a></li>
                                             <!-- ... các mục con khác giữ nguyên ... -->
                                             <li class="nav-item"><a class="nav-link"

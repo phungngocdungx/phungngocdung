@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\EmailSyncStatusController;
 use App\Http\Controllers\ApplicationSettingsController;
 use App\Http\Controllers\Web\Accounts\AdminController;
+use App\Http\Controllers\Web\Accounts\ManageController;
 
 Route::get('/', [HomeController::class, 'index'])->middleware('auth')->name('home');
 Route::get('/pJM', [HomeController::class, 'pJM'])->name('pJM');
@@ -22,10 +23,13 @@ Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Route quản lý accounts System
-// Tik tok
-Route::get('/tiktok', [AccountController::class, 'showAccTT'])->name('tiktok.index');
-// Admin
-Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+Route::get('/tiktok', [AccountController::class, 'showAccTT'])->name('tiktok.index');// Tik tok
+
+Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');// Admin
+Route::get('/admin/edit/{id}', [AdminController::class, 'edit'])->name('admin.edit');
+Route::post('/admin/update/{id}', [AdminController::class, 'update'])->name('admin.update');
+
+Route::get('/manage', [ManageController::class, 'index'])->name('manage.index');// Quản lý tài khoản
 
 
 // Nhóm Route quản lý Accounts Family
