@@ -1,6 +1,10 @@
 @extends('layouts.app')
 @section('title', 'Quản lý tài khoản admin')
 @section('content')
+
+    <head>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+    </head>
     <div class="content">
         <h2 class="mb-2 lh-sm">Quản lý tài khoản admin</h2>
         <p class="text-body-tertiary lead mb-2">Quản lý tất cả tài khoản admin hệ thống & cấp quyền truy cập</p>
@@ -16,14 +20,12 @@
                                     </div>
                                     <div class="col col-md-auto">
                                         <nav class="nav justify-content-end doc-tab-nav align-items-center" role="tablist">
-                                            <button class="btn btn-link px-2 text-body copy-code-btn" type="button"><span
-                                                    class="fas fa-copy me-1"></span>Copy
-                                                Code</button><a class="btn btn-sm btn-phoenix-primary code-btn ms-2"
+                                            <a class="btn btn-sm btn-phoenix-primary code-btn ms-2"
                                                 data-bs-toggle="collapse" href="#example-code" role="button"
                                                 aria-controls="example-code" aria-expanded="false"> <span class="me-2"
-                                                    data-feather="code"></span>View code</a><a
+                                                    data-feather="code"></span>Phân quyền</a><a
                                                 class="btn btn-sm btn-phoenix-primary preview-btn ms-2"><span class="me-2"
-                                                    data-feather="eye"></span>Hide code</a>
+                                                    data-feather="eye"></span>Ẩn</a>
                                         </nav>
                                     </div>
                                 </div>
@@ -79,7 +81,7 @@
                                                 </thead>
                                                 <tbody class="list" id="bulk-select-body">
                                                     @foreach ($admins as $admin)
-                                                        <tr>
+                                                        <tr data-user-id="{{ $admin->id }}">
                                                             <td class="fs-9 align-middle">
                                                                 <div class="form-check mb-0 fs-8">
                                                                     <input class="form-check-input" type="checkbox"
@@ -88,7 +90,10 @@
                                                             </td>
                                                             <td class="align-middle ps-3 name">{{ $admin->name }}</td>
                                                             <td class="align-middle email">{{ $admin->email }}</td>
-                                                            <td class="align-middle age">{{ $admin->age }}</td>
+                                                            <td class="align-middle age">
+                                                                {{-- Bạn cần định nghĩa cách tính tuổi trong Controller hoặc Model User --}}
+                                                                {{-- Hoặc xóa cột này nếu không cần --}}
+                                                            </td>
                                                             <td class="align-middle white-space-nowrap text-end pe-0">
                                                                 <div class="btn-reveal-trigger position-static"><button
                                                                         class="btn btn-sm dropdown-toggle dropdown-caret-none transition-none btn-reveal fs-10"
@@ -97,12 +102,14 @@
                                                                         aria-expanded="false"
                                                                         data-bs-reference="parent"><span
                                                                             class="fas fa-ellipsis-h fs-10"></span></button>
-                                                                    <div class="dropdown-menu dropdown-menu-end py-2"><a
-                                                                            class="dropdown-item" href="#!">View</a><a
-                                                                            class="dropdown-item" href="#!">Export</a>
+                                                                    <div class="dropdown-menu dropdown-menu-end py-2">
+                                                                        <a class="dropdown-item" href="#!">Xem</a>
+                                                                        <a class="dropdown-item" href="#!">Xuất</a>
+                                                                        <a class="dropdown-item edit-account-btn"
+                                                                            href="#">Chỉnh sửa tài khoản</a>
                                                                         <div class="dropdown-divider"></div><a
                                                                             class="dropdown-item text-danger"
-                                                                            href="#!">Remove</a>
+                                                                            href="#!">Xóa</a>
                                                                     </div>
                                                                 </div>
                                                             </td>
@@ -121,7 +128,8 @@
                                                     View all
                                                     <span class="fas fa-angle-right ms-1"
                                                         data-fa-transform="down-1"></span>
-                                                </a><a class="fw-semibold d-none" href="#!" data-list-view="less">
+                                                </a>
+                                                <a class="fw-semibold d-none" href="#!" data-list-view="less">
                                                     View Less
                                                     <span class="fas fa-angle-right ms-1"
                                                         data-fa-transform="down-1"></span>
@@ -134,10 +142,6 @@
                                                     data-list-pagination="next"><span>Next</span></button>
                                             </div>
                                         </div>
-                                        <p class="mb-2">Click the button to get selected rows</p><button
-                                            class="btn btn-warning" data-selected-rows="data-selected-rows">Get
-                                            Selected Rows</button>
-                                        <pre id="selectedRows"></pre>
                                     </div>
                                 </div>
                             </div>
@@ -158,4 +162,494 @@
         </div>
         @include('partials.footer')
     </div>
+
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Chỉnh sửa Thông tin Người dùng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId" name="user_id">
+                        @csrf {{-- @method('POST') <-- Không cần thiết khi route đã là POST --}}
+
+                        <ul class="nav nav-tabs mb-3" id="editUserTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="user-tab" data-bs-toggle="tab"
+                                    data-bs-target="#user-pane" type="button" role="tab" aria-controls="user-pane"
+                                    aria-selected="true">Thông tin Cơ bản</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="profile-tab" data-bs-toggle="tab"
+                                    data-bs-target="#profile-pane" type="button" role="tab"
+                                    aria-controls="profile-pane" aria-selected="false">Hồ sơ Cá nhân</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="details-tab" data-bs-toggle="tab"
+                                    data-bs-target="#details-pane" type="button" role="tab"
+                                    aria-controls="details-pane" aria-selected="false">Chi tiết Bổ sung</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="editUserTabsContent">
+                            <div class="tab-pane fade show active" id="user-pane" role="tabpanel"
+                                aria-labelledby="user-tab">
+                                <div class="mb-3">
+                                    <label for="editUserName" class="form-label">Tên</label>
+                                    <input type="text" class="form-control" id="editUserName" name="name"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editUserEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="editUserEmail" name="email"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editUserPassword" class="form-label">Mật khẩu (Để trống nếu không muốn
+                                        thay đổi)</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="editUserPassword"
+                                            name="password">
+                                        <button class="btn btn-outline-secondary toggle-password" type="button"
+                                            data-target="editUserPassword">
+                                            <i class="fas fa-eye"></i> </button>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editUserPasswordConfirmation" class="form-label">Xác nhận Mật khẩu</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="editUserPasswordConfirmation"
+                                            name="password_confirmation">
+                                        <button class="btn btn-outline-secondary toggle-password" type="button"
+                                            data-target="editUserPasswordConfirmation">
+                                            <i class="fas fa-eye"></i> </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="profile-pane" role="tabpanel" aria-labelledby="profile-tab">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="editProfilePhone" class="form-label">Số điện thoại</label>
+                                        <input type="text" class="form-control" id="editProfilePhone" name="phone">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="editProfileAddress" class="form-label">Địa chỉ</label>
+                                        <input type="text" class="form-control" id="editProfileAddress"
+                                            name="address">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="editProfileCity" class="form-label">Tỉnh/Thành phố</label>
+                                        <input type="text" class="form-control" id="editProfileCity" name="city">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="editProfileDistrict" class="form-label">Quận/Huyện</label>
+                                        <input type="text" class="form-control" id="editProfileDistrict"
+                                            name="district">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="editProfileWard" class="form-label">Phường/Xã</label>
+                                        <input type="text" class="form-control" id="editProfileWard" name="ward">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="editProfileCountry" class="form-label">Quốc gia</label>
+                                        <input type="text" class="form-control" id="editProfileCountry"
+                                            name="country">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="editProfileBirthday" class="form-label">Ngày sinh</label>
+                                        <input type="date" class="form-control" id="editProfileBirthday"
+                                            name="birthday">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editProfileGender" class="form-label">Giới tính</label>
+                                    <select class="form-select" id="editProfileGender" name="gender">
+                                        <option value="">Chọn giới tính</option>
+                                        <option value="nam">Nam</option>
+                                        <option value="nu">Nữ</option>
+                                        <option value="khac">Khác</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editProfileFacebook" class="form-label">Link Facebook</label>
+                                    <input type="url" class="form-control" id="editProfileFacebook"
+                                        name="facebook_url">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editProfileZalo" class="form-label">Zalo (Số điện thoại hoặc link)</label>
+                                    <input type="text" class="form-control" id="editProfileZalo" name="zalo">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editProfileBio" class="form-label">Tiểu sử</label>
+                                    <textarea class="form-control" id="editProfileBio" name="bio" rows="3"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editProfileJobTitle" class="form-label">Chức danh/Nghề nghiệp</label>
+                                    <input type="text" class="form-control" id="editProfileJobTitle"
+                                        name="job_title">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editProfileAvatar" class="form-label">URL Avatar</label>
+                                    <input type="text" class="form-control" id="editProfileAvatar" name="avatar">
+                                    <small class="form-text text-muted">Nhập URL cho ảnh đại diện.</small>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="details-pane" role="tabpanel" aria-labelledby="details-tab">
+                                <div class="mb-3">
+                                    <label for="editDetailIdNumber" class="form-label">Số CCCD/CMND</label>
+                                    <input type="text" class="form-control" id="editDetailIdNumber" name="id_number">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailIdIssuedDate" class="form-label">Ngày cấp CCCD/CMND</label>
+                                    <input type="date" class="form-control" id="editDetailIdIssuedDate"
+                                        name="id_issued_date">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailIdIssuedPlace" class="form-label">Nơi cấp CCCD/CMND</label>
+                                    <input type="text" class="form-control" id="editDetailIdIssuedPlace"
+                                        name="id_issued_place">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailMaritalStatus" class="form-label">Tình trạng hôn nhân</label>
+                                    <input type="text" class="form-control" id="editDetailMaritalStatus"
+                                        name="marital_status">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailNationality" class="form-label">Quốc tịch</label>
+                                    <input type="text" class="form-control" id="editDetailNationality"
+                                        name="nationality">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailInstagramUrl" class="form-label">Link Instagram</label>
+                                    <input type="url" class="form-control" id="editDetailInstagramUrl"
+                                        name="instagram_url">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailLinkedinUrl" class="form-label">Link LinkedIn</label>
+                                    <input type="url" class="form-control" id="editDetailLinkedinUrl"
+                                        name="linkedin_url">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailTiktokUrl" class="form-label">Link TikTok</label>
+                                    <input type="text" class="form-control" id="editDetailTiktokUrl"
+                                        name="tiktok_url">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailCompanyName" class="form-label">Tên công ty</label>
+                                    <input type="text" class="form-control" id="editDetailCompanyName"
+                                        name="company_name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailCompanyAddress" class="form-label">Địa chỉ công ty</label>
+                                    <input type="text" class="form-control" id="editDetailCompanyAddress"
+                                        name="company_address">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailWorkingStatus" class="form-label">Tình trạng việc làm</label>
+                                    <input type="text" class="form-control" id="editDetailWorkingStatus"
+                                        name="working_status">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailShippingNote" class="form-label">Ghi chú giao hàng</label>
+                                    <textarea class="form-control" id="editDetailShippingNote" name="shipping_note" rows="3"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailPreferredPayment" class="form-label">Phương thức thanh toán ưa
+                                        thích</label>
+                                    <input type="text" class="form-control" id="editDetailPreferredPayment"
+                                        name="preferred_payment">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailPoints" class="form-label">Điểm tích lũy</label>
+                                    <input type="number" class="form-control" id="editDetailPoints" name="points">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailSlug" class="form-label">Slug URL cá nhân hóa hồ sơ</label>
+                                    <input type="text" class="form-control" id="editDetailSlug" name="slug">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailStatus" class="form-label">Trạng thái tài khoản</label>
+                                    <input type="text" class="form-control" id="editDetailStatus" name="status">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailLastLoginAt" class="form-label">Lần đăng nhập gần nhất</label>
+                                    <input type="datetime-local" class="form-control" id="editDetailLastLoginAt"
+                                        name="last_login_at">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editDetailDeviceInfo" class="form-label">Thông tin thiết bị</label>
+                                    <textarea class="form-control" id="editDetailDeviceInfo" name="device_info" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+            const editUserForm = document.getElementById('editUserForm');
+
+            // Xử lý nút hiển thị/ẩn mật khẩu
+            document.querySelectorAll('.toggle-password').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.dataset.target; // Lấy ID của trường input từ data-target
+                    const passwordInput = document.getElementById(targetId);
+                    const icon = this.querySelector('i'); // Lấy icon bên trong nút
+
+                    // Chuyển đổi loại của trường input và thay đổi icon
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash'); // Icon mắt bị gạch ngang
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye'); // Icon mắt
+                    }
+                });
+            });
+
+            // Trình lắng nghe sự kiện cho nút "Chỉnh sửa tài khoản"
+            document.querySelectorAll('.edit-account-btn').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const userId = this.closest('tr').dataset.userId;
+
+                    if (!userId) {
+                        console.error('Không tìm thấy ID người dùng để chỉnh sửa.');
+                        alert('Lỗi: Không tìm thấy ID người dùng.');
+                        return;
+                    }
+
+                    // Lấy dữ liệu người dùng qua AJAX
+                    fetch(`/admin/edit/${userId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                // Cố gắng đọc phản hồi dưới dạng văn bản để gỡ lỗi nếu không phải JSON
+                                return response.text().then(text => {
+                                    try {
+                                        const errorJson = JSON.parse(
+                                            text); // Thử parse JSON
+                                        throw errorJson;
+                                    } catch (e) {
+                                        // Nếu không phải JSON, ném lỗi với văn bản phản hồi
+                                        throw new Error(text);
+                                    }
+                                });
+                            }
+                            return response.json(); // Phản hồi thành công sẽ là JSON
+                        })
+                        .then(data => {
+                            // Điền dữ liệu vào form users
+                            document.getElementById('editUserId').value = data.id;
+                            document.getElementById('editUserName').value = data.name;
+                            document.getElementById('editUserEmail').value = data.email;
+                            document.getElementById('editUserPassword').value =
+                                ''; // Luôn xóa mật khẩu
+                            document.getElementById('editUserPasswordConfirmation').value =
+                                ''; // Luôn xóa xác nhận mật khẩu
+
+                            // Điền dữ liệu vào form users_profiles
+                            if (data.user_profile) {
+                                document.getElementById('editProfilePhone').value = data
+                                    .user_profile.phone || '';
+                                document.getElementById('editProfileAddress').value = data
+                                    .user_profile.address || '';
+                                document.getElementById('editProfileCity').value = data
+                                    .user_profile.city || '';
+                                document.getElementById('editProfileDistrict').value = data
+                                    .user_profile.district || '';
+                                document.getElementById('editProfileWard').value = data
+                                    .user_profile.ward || '';
+                                document.getElementById('editProfileCountry').value = data
+                                    .user_profile.country || '';
+                                document.getElementById('editProfileBirthday').value = data
+                                    .user_profile.birthday ? new Date(data.user_profile
+                                        .birthday).toISOString().split('T')[0] : '';
+                                document.getElementById('editProfileGender').value = data
+                                    .user_profile.gender || '';
+                                document.getElementById('editProfileFacebook').value = data
+                                    .user_profile.facebook_url || '';
+                                document.getElementById('editProfileZalo').value = data
+                                    .user_profile.zalo || '';
+                                document.getElementById('editProfileBio').value = data
+                                    .user_profile.bio || '';
+                                document.getElementById('editProfileJobTitle').value = data
+                                    .user_profile.job_title || '';
+                                document.getElementById('editProfileAvatar').value = data
+                                    .user_profile.avatar || '';
+                            } else {
+                                // Xóa các trường nếu không có profile
+                                editUserForm.querySelectorAll(
+                                    '#profile-pane input, #profile-pane textarea, #profile-pane select'
+                                ).forEach(el => el.value = '');
+                            }
+
+                            // Điền dữ liệu vào form user_details
+                            if (data.user_detail) {
+                                document.getElementById('editDetailIdNumber').value = data
+                                    .user_detail.id_number || '';
+                                document.getElementById('editDetailIdIssuedDate').value = data
+                                    .user_detail.id_issued_date ? new Date(data.user_detail
+                                        .id_issued_date).toISOString().split('T')[0] : '';
+                                document.getElementById('editDetailIdIssuedPlace').value = data
+                                    .user_detail.id_issued_place || '';
+                                document.getElementById('editDetailMaritalStatus').value = data
+                                    .user_detail.marital_status || '';
+                                document.getElementById('editDetailNationality').value = data
+                                    .user_detail.nationality || '';
+                                document.getElementById('editDetailInstagramUrl').value = data
+                                    .user_detail.instagram_url || '';
+                                document.getElementById('editDetailLinkedinUrl').value = data
+                                    .user_detail.linkedin_url || '';
+                                document.getElementById('editDetailTiktokUrl').value = data
+                                    .user_detail.tiktok_url || '';
+                                document.getElementById('editDetailCompanyName').value = data
+                                    .user_detail.company_name || '';
+                                document.getElementById('editDetailCompanyAddress').value = data
+                                    .user_detail.company_address || '';
+                                document.getElementById('editDetailWorkingStatus').value = data
+                                    .user_detail.working_status || '';
+                                document.getElementById('editDetailShippingNote').value = data
+                                    .user_detail.shipping_note || '';
+                                document.getElementById('editDetailPreferredPayment').value =
+                                    data.user_detail.preferred_payment || '';
+                                document.getElementById('editDetailPoints').value = data
+                                    .user_detail.points || 0;
+                                document.getElementById('editDetailSlug').value = data
+                                    .user_detail.slug || '';
+                                document.getElementById('editDetailStatus').value = data
+                                    .user_detail.status || '';
+                                // Chuyển đổi định dạng datetime-local
+                                if (data.user_detail.last_login_at) {
+                                    const lastLoginDate = new Date(data.user_detail
+                                        .last_login_at);
+                                    const formattedDate = lastLoginDate.toISOString().slice(0,
+                                        16); // YYYY-MM-DDTHH:MM
+                                    document.getElementById('editDetailLastLoginAt').value =
+                                        formattedDate;
+                                } else {
+                                    document.getElementById('editDetailLastLoginAt').value = '';
+                                }
+                                document.getElementById('editDetailDeviceInfo').value = data
+                                    .user_detail.device_info || '';
+                            } else {
+                                // Xóa các trường nếu không có user_details
+                                editUserForm.querySelectorAll(
+                                    '#details-pane input, #details-pane textarea, #details-pane select'
+                                ).forEach(el => el.value = '');
+                            }
+
+                            editUserModal.show();
+                        })
+                        .catch(error => {
+                            console.error('Lỗi khi tìm nạp dữ liệu người dùng:', error);
+                            let errorMessage =
+                                'Không thể tải dữ liệu người dùng. Vui lòng thử lại.';
+                            if (error.message && typeof error.message === 'string') {
+                                errorMessage = error
+                                    .message; // Sử dụng thông báo lỗi từ phía máy chủ nếu có
+                            }
+                            alert(errorMessage);
+                        });
+                });
+            });
+
+            // Xử lý gửi biểu mẫu
+            editUserForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const userId = document.getElementById('editUserId').value;
+                const formData = new FormData(this); // Lấy tất cả dữ liệu từ form
+                const jsonData = {};
+
+                // Chuyển FormData thành JSON Object
+                formData.forEach((value, key) => {
+                    // Xử lý các trường ngày/giờ rỗng hoặc không hợp lệ để gửi null
+                    if ((key === 'birthday' || key === 'id_issued_date') && value === '') {
+                        jsonData[key] = null;
+                    } else if (key === 'last_login_at') {
+                        jsonData[key] = value ? new Date(value).toISOString() :
+                            null; // Chuyển đổi thành ISO string nếu có giá trị
+                    } else {
+                        jsonData[key] = value;
+                    }
+
+                });
+
+                // Logging để kiểm tra jsonData trước khi gửi
+                console.log('Dữ liệu gửi đi:', jsonData);
+
+                fetch(`/admin/update/${userId}`, {
+                        method: 'POST', // Đảm bảo phương thức là POST
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content')
+                        },
+                        body: JSON.stringify(jsonData)
+                    })
+                    .then(response => {
+                        // Kiểm tra nếu phản hồi không phải là JSON hoặc có lỗi HTTP
+                        if (!response.ok) {
+                            // Cố gắng đọc phản hồi dưới dạng văn bản để gỡ lỗi nếu không phải JSON
+                            return response.text().then(text => {
+                                console.error('Phản hồi không phải JSON:',
+                                    text); // Ghi nhật ký toàn bộ phản hồi
+                                try {
+                                    const errorJson = JSON.parse(text); // Thử parse JSON
+                                    throw errorJson;
+                                } catch (e) {
+                                    // Nếu không phải JSON, ném lỗi với văn bản phản hồi
+                                    throw new Error(text);
+                                }
+                            });
+                        }
+                        return response.json(); // Phản hồi thành công sẽ là JSON
+                    })
+                    .then(data => {
+                        alert(data.message);
+                        editUserModal.hide();
+                        location.reload(); // Tải lại trang để thấy thay đổi
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi cập nhật người dùng (catch block):', error);
+                        let errorMessage = 'Đã xảy ra lỗi khi cập nhật dữ liệu.';
+
+                        if (error && typeof error === 'object' && error.errors) {
+                            // Lỗi xác thực từ Laravel
+                            errorMessage = 'Lỗi xác thực:\n' + Object.values(error.errors).map(e => e
+                                .join(', ')).join('\n');
+                        } else if (error && typeof error === 'object' && error.message) {
+                            // Lỗi từ server (có thể là message từ controller của bạn hoặc lỗi chung)
+                            errorMessage = error.message;
+                        } else if (typeof error === 'string') {
+                            // Lỗi nếu phản hồi không phải JSON và là văn bản thuần túy (ví dụ: trang 404 HTML)
+                            errorMessage = 'Phản hồi không mong muốn từ máy chủ:\n' + error.substring(0,
+                                Math.min(error.length, 200)) + '...'; // Chỉ lấy một phần của HTML
+                        } else {
+                            // Lỗi không xác định
+                            errorMessage = 'Lỗi không xác định xảy ra.';
+                        }
+                        alert(errorMessage);
+                    });
+            });
+        });
+    </script>
 @endsection
