@@ -29,12 +29,18 @@ class LoginController extends Controller
                 return redirect()->route('home');
             }
 
+            // if ($user->hasRole('manage')) {
+            //     return redirect()->route('home');
+            // }
+
             if ($user->hasRole('manage')) {
-                return redirect()->route('home');
+                return redirect()->route(
+                    in_array($user->id, [2, 3]) ? 'accounts.index' : ($user->id === 5 ? 'tiktok.index' : 'home')
+                );
             }
 
             if ($user->hasRole('user')) {
-                return redirect()->route('welcome'); // hoặc route('home')
+                return redirect()->route('tiktok.index');
                 // return redirect()->away('http://localhost:5173/');
                 // return redirect()->away('http://localhost:3000/');
             }

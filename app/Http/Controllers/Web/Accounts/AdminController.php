@@ -16,8 +16,8 @@ class AdminController extends Controller
     public function index(Request $request)
     {
         // Lấy tất cả người dùng, eager load roles để hiển thị vai trò hiện tại
-        $admins = User::with('roles')->get(); //
-
+        $admins = User::with('roles')->get(); 
+        // dd($admins);
         return view('apps.account.admin.index', compact('admins'));
     }
 
