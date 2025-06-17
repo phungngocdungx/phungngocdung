@@ -25,9 +25,10 @@
                                     </a><!-- more inner pages-->
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ $user->hasRole('manage') ? '#' : route('accounts.index') }}"
-                                        onclick="{{ $user->hasRole('manage') ? 'return false;' : '' }}"
-                                        style="{{ $user->hasRole('manage') ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed;' : '' }}">
+                                    <a class="nav-link"
+                                        href="{{ $user->hasRole(['manage', 'user']) ? '#' : route('accounts.index') }}"
+                                        onclick="{{ $user->hasRole(['manage', 'user']) ? 'return false;' : '' }}"
+                                        style="{{ $user->hasRole(['manage', 'user']) ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed;' : '' }}">
                                         <div class="d-flex align-items-center">
                                             <span class="nav-link-text">Tài Khoản Gia Đình</span>
                                         </div>
@@ -79,8 +80,12 @@
                     <hr class="navbar-vertical-line" /><!-- parent pages-->
                     {{-- Phần acc --}}
                     <div class="nav-item-wrapper">
-                        <a class="nav-link dropdown-indicator label-1" href="#nv-acc"
-                            role="button"data-bs-toggle="collapse" aria-expanded="false" aria-controls="nv-acc">
+                        <a class="nav-link dropdown-indicator label-1"
+                            href="{{ $user->hasRole('admin') ? '#nv-acc' : '#' }}" role="button"
+                            data-bs-toggle="{{ $user->hasRole('admin') ? 'collapse' : '' }}" aria-expanded="false"
+                            aria-controls="nv-acc" onclick="{{ $user->hasRole('admin') ? '' : 'return false;' }}"
+                            style="{{ $user->hasRole('admin') ? '' : 'pointer-events: none; opacity: 0.5; cursor: not-allowed;' }}"
+                            role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="nv-acc">
                             <div class="d-flex align-items-center">
                                 <div class="dropdown-indicator-icon-wrapper">
                                     <span class="fas fa-caret-right dropdown-indicator-icon"></span>
@@ -104,7 +109,8 @@
                                         </div>
                                     </a><!-- more inner pages-->
                                     <div class="parent-wrapper">
-                                        <ul class="nav collapse parent show" data-bs-parent="#nv-acc" id="nv-admin-acc">
+                                        <ul class="nav collapse parent show" data-bs-parent="#nv-acc"
+                                            id="nv-admin-acc">
                                             <li class="nav-item"><a class="nav-link"
                                                     href="apps/e-commerce/admin/add-product.html">
                                                     <div class="d-flex align-items-center"><span
@@ -170,12 +176,6 @@
                                                     </div>
                                                 </a>
                                             </li>
-                                            <li class="nav-item"><a class="nav-link"
-                                                    href="{{ route('tiktok.index') }}">
-                                                    <div class="d-flex align-items-center"><span
-                                                            class="nav-link-text">Tik Tok</span></div>
-                                                </a><!-- more inner pages-->
-                                            </li>
                                         </ul>
                                     </div>
                                 </li>
@@ -183,7 +183,37 @@
                         </div>
 
                     </div><!-- parent pages-->
+                    <div class="nav-item-wrapper">
+                        <a class="nav-link label-1"
+                            href="{{ $user->hasRole('manage') ? '#' : route('tiktok.index') }}"
+                            onclick="{{ $user->hasRole('manage') ? 'return false;' : '' }}"
+                            style="{{ $user->hasRole('manage') ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed;' : '' }}"
+                            role="button" data-bs-toggle="" aria-expanded="false">
+                            <div class="d-flex align-items-center">
+                                <span class="nav-link-icon">
+                                    <i class="fab fa-tiktok"></i>
+                                </span>
+                                <span class="nav-link-text-wrapper">
+                                    <span class="nav-link-text">Tik Tok</span></span>
 
+                            </div>
+                        </a>
+                    </div><!-- parent pages-->
+                    <div class="nav-item-wrapper">
+                        <a class="nav-link label-1" href="{{ $user->hasRole('user') ? '#' : route('tiktok.index') }}"
+                            onclick="{{ $user->hasRole('user') ? 'return false;' : '' }}"
+                            style="{{ $user->hasRole('user') ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed;' : '' }}"
+                            role="button" data-bs-toggle="" aria-expanded="false">
+                            <div class="d-flex align-items-center">
+                                <span class="nav-link-icon">
+                                    <i class="fab fa-tiktok"></i>
+                                </span>
+                                <span class="nav-link-text-wrapper">
+                                    <span class="nav-link-text">Accounts Social Network</span>
+                                </span>
+                            </div>
+                        </a>
+                    </div><!-- parent pages-->
                     <div class="nav-item-wrapper">
                         <a class="nav-link dropdown-indicator label-1" href="#nv-system-management" role="button"
                             data-bs-toggle="collapse" aria-expanded="false" aria-controls="nv-system-management">
@@ -808,8 +838,13 @@
                             <div class="d-flex align-items-center"><span class="nav-link-icon"><span
                                         data-feather="message-square"></span></span><span
                                     class="nav-link-text-wrapper"><span class="nav-link-text">Chat</span></span></div>
-                        </a></div><!-- parent pages-->
-                    <div class="nav-item-wrapper"><a class="nav-link dropdown-indicator label-1" href="#nv-email"
+                        </a>
+                    </div><!-- parent pages-->
+                    <div class="nav-item-wrapper"><a class="nav-link dropdown-indicator label-1"
+                            href="{{ $user->hasRole('admin') ? '#nv-email' : '#' }}"
+                            data-bs-toggle="{{ $user->hasRole('admin') ? 'collapse' : '' }}" aria-expanded="false"
+                            aria-controls="nv-acc" onclick="{{ $user->hasRole('admin') ? '' : 'return false;' }}"
+                            style="{{ $user->hasRole('admin') ? '' : 'pointer-events: none; opacity: 0.5; cursor: not-allowed;' }}"
                             role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="nv-email">
                             <div class="d-flex align-items-center">
                                 <div class="dropdown-indicator-icon-wrapper"><span
@@ -1048,8 +1083,8 @@
                             </ul>
                         </div>
                     </div><!-- parent pages-->
-                    <div class="nav-item-wrapper"><a class="nav-link dropdown-indicator label-1" href="#nv-landing"
-                            role="button" data-bs-toggle="collapse" aria-expanded="false"
+                    <div class="nav-item-wrapper"><a class="nav-link dropdown-indicator label-1"
+                            href="#nv-landing" role="button" data-bs-toggle="collapse" aria-expanded="false"
                             aria-controls="nv-landing">
                             <div class="d-flex align-items-center">
                                 <div class="dropdown-indicator-icon-wrapper"><span
@@ -1059,7 +1094,8 @@
                             </div>
                         </a>
                         <div class="parent-wrapper label-1">
-                            <ul class="nav collapse parent" data-bs-parent="#navbarVerticalCollapse" id="nv-landing">
+                            <ul class="nav collapse parent" data-bs-parent="#navbarVerticalCollapse"
+                                id="nv-landing">
                                 <li class="collapsed-nav-item-title d-none">Landing</li>
                                 <li class="nav-item"><a class="nav-link" href="pages/landing/default.html">
                                         <div class="d-flex align-items-center"><span
