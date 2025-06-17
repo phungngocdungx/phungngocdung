@@ -2,9 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\MailController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\LoginController;
@@ -30,10 +28,11 @@ Route::get('/admin/edit/{id}', [AdminController::class, 'edit'])->name('admin.ed
 Route::post('/admin/update/{id}', [AdminController::class, 'update'])->name('admin.update');
 // Route riêng để phân quyền (nếu bạn muốn modal hoặc chức năng riêng biệt cho phân quyền)
 // Nếu bạn tích hợp vào modal chỉnh sửa chính, route này không cần thiết.
-Route::post('/admin/assign-roles/{id}', [AdminController::class, 'assignRoles'])->name('admin.assign_roles');
+Route::post('/admin/assign-roles/{id}', [AdminController::class, 'assignRoles'])->name('admin.assign_roles');// Phân quyền roles
 
 Route::get('/manage', [ManageController::class, 'index'])->name('manage.index');// Quản lý tài khoản
 
+Route::get('/show', [AccountController::class, 'show'])->name('show');// Hàm này dùng để show accounts các nề tảng
 
 // Nhóm Route quản lý Accounts Family
 Route::prefix('accounts')->name('accounts.')->group(function () {

@@ -27,7 +27,7 @@
     <!-- ===============================================-->
     <!--    Stylesheets-->
     <!-- ===============================================-->
-     <link href="../../vendors/prism/prism-okaidia.css" rel="stylesheet">{{-- Css cho trang quản lý tài khoản admin --}}
+     <link href="vendors/prism/prism-okaidia.css" rel="stylesheet">{{-- Css cho trang quản lý tài khoản admin --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&amp;display=swap"
@@ -185,7 +185,7 @@
     <script src="vendors/echarts/echarts.min.js"></script>
     <script src="assets/js/dashboards/ecommerce-dashboard.js"></script>
     {{-- Js cho trang quản lý tài khoản admin --}}
-    <script src="../../vendors/prism/prism.js"></script>
+    <script src="vendors/prism/prism.js"></script>
 </body>
 
 </html>

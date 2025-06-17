@@ -29,13 +29,9 @@ class LoginController extends Controller
                 return redirect()->route('home');
             }
 
-            // if ($user->hasRole('manage')) {
-            //     return redirect()->route('home');
-            // }
-
             if ($user->hasRole('manage')) {
                 return redirect()->route(
-                    in_array($user->id, [2, 3]) ? 'accounts.index' : ($user->id === 5 ? 'tiktok.index' : 'home')
+                    in_array($user->id, [2, 3]) ? 'show' : ($user->id === 5 ? 'home' : 'home')
                 );
             }
 

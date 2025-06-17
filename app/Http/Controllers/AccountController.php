@@ -89,17 +89,61 @@ class AccountController extends Controller
      */
     public function show(Account $account) // Route Model Binding vẫn hoạt động
     {
-        // LƯU Ý: BỎ QUA PHẦN KIỂM TRA QUYỀN TRONG GIAI ĐOẠN NÀY
-        // Khi tích hợp đăng nhập, bạn cần thêm logic kiểm tra xem người dùng có quyền xem $account này không
-        // Ví dụ:
-        // $isOwner = $account->familyMembers()->where('family_member_id', Auth::id())->exists();
-        // if (!$isOwner && Auth::user()) { // Thêm Auth::user() để kiểm tra nếu có người đăng nhập
-        //     abort(403, 'Bạn không có quyền xem tài khoản này.');
-        // }
+        // Lấy thông tin người dùng đang đăng nhập
+        $user = Auth::user();
 
-        // Nhờ có Accessors trong Model Account,
-        // $account->username, $account->password, $account->note sẽ tự động giải mã
-        return view('accounts.show', compact('account'));
+        // ID của nền tảng TikTok (giả sử là 6)
+        $tiktokPlatformId = 6;
+
+        // Lấy danh sách các tài khoản KHÔNG PHẢI TikTok
+        // Sắp xếp theo tên nền tảng, sau đó theo ngày cập nhật
+        $otherAccounts = Account::with(['platform', 'familyMembers'])
+            ->where('platform_id', '!=', $tiktokPlatformId)
+            ->select('accounts.*') // Quan trọng khi dùng join
+            ->join('platforms', 'accounts.platform_id', '=', 'platforms.id')
+            ->orderBy('platforms.name', 'asc')
+            ->orderByDesc('accounts.updated_at')
+            ->get(); // Lấy tất cả, nếu muốn phân trang sẽ xử lý phức tạp hơn với tab
+
+        // Lấy danh sách các tài khoản LÀ TikTok, cùng với thông tin chi tiết
+        // Sắp xếp theo ngày cập nhật gần nhất
+        // --- Xử lý cho Tab TikTok với logic phân quyền MỚI ---
+
+        // 1. Xây dựng câu truy vấn CƠ SỞ cho tài khoản TikTok
+        $tiktokQuery = Account::with(['platform', 'familyMembers', 'socialnetworkDetail.mailAccount'])
+            ->where('platform_id', $tiktokPlatformId);
+
+        // 2. ÁP DỤNG ĐIỀU KIỆN LỌC DỰA TRÊN VAI TRÒ
+        // =========================================================
+        // THAY ĐỔI CHÍNH Ở ĐÂY
+        // Giả sử tên vai trò trong database của bạn là 'manager'
+        // if ($user && $user->hasRole('manage')) {
+        //     // dd('Đã vào trong block IF của manager. Sẽ bắt đầu lọc...'); 
+        //     // =========================================================
+        //     // Thêm điều kiện: chỉ lấy các account có socialnetworkDetail với status là 'active'
+        //     $tiktokQuery->whereHas('socialnetworkDetail', function ($query) {
+        //         $query->where('status', 'active');
+        //     });
+        // }
+        // Nếu người dùng là 'admin' hoặc vai trò khác, điều kiện if ở trên sẽ sai,
+        // và không có bộ lọc nào được áp dụng, do đó Admin sẽ thấy tất cả.
+        // dd($user->roles);
+        // 3. Thực thi câu truy vấn
+        $tiktokAccounts = $tiktokQuery->orderBy('id', 'asc')->get();
+
+        // Lấy các dữ liệu phụ cần cho các modal (Thêm, Sửa)
+        $platforms = Platform::orderBy('name')->get();
+        $allFamilyMembers = FamilyMember::orderBy('name')->get();
+        $mailAccounts = MailAccount::all();
+        // dd($otherAccounts);
+        return view('pages.show', compact(
+            'otherAccounts',
+            'tiktokAccounts',
+            'platforms',
+            'allFamilyMembers',
+            'mailAccounts'
+            // Các biến khác nếu cần
+        ));
     }
 
     // Trong app/Http/Controllers/AccountController.php
