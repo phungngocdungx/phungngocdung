@@ -206,7 +206,7 @@
                             role="button" data-bs-toggle="" aria-expanded="false">
                             <div class="d-flex align-items-center">
                                 <span class="nav-link-icon">
-                                    <i class="fab fa-tiktok"></i>
+                                    <i class="fas fa-users"></i>
                                 </span>
                                 <span class="nav-link-text-wrapper">
                                     <span class="nav-link-text">Accounts Social Network</span>
