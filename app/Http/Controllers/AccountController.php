@@ -146,9 +146,6 @@ class AccountController extends Controller
         ));
     }
 
-    // Trong app/Http/Controllers/AccountController.php
-    // ... (use statements và các phương thức khác) ...
-
     public function store(StoreAccountRequest $request)
     {
         // dd($request);

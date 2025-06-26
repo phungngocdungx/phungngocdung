@@ -1,24 +1,17 @@
 <?php
 
 use Illuminate\Http\Request;
-use App\Http\Middleware\PingDatabase;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Web\Accounts\AdminController;
 use App\Http\Controllers\Api\EmailSyncStatusController;
 use App\Http\Controllers\ApplicationSettingsController;
+use App\Http\Controllers\Web\Accounts\AdminController;
 use App\Http\Controllers\Web\Accounts\ManageController;
 
-Route::middleware([
-    PingDatabase::class,
-])->group(function () {
-    Route::get('/', [HomeController::class, 'index'])->middleware('auth')->name('home');
-});
-
-
+Route::get('/', [HomeController::class, 'index'])->middleware('auth')->name('home');
 Route::get('/pJM', [HomeController::class, 'pJM'])->name('pJM');
 Route::get('/product', [HomeController::class, 'product'])->name('product');
 Route::get('/add-product', [HomeController::class, 'addProduct'])->name('addProduct');
