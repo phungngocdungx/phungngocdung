@@ -25,13 +25,29 @@
     <div class="content pt-0">
         <div class="email-container">
             <div class="row gx-lg-6 gx-3 py-4 z-2 position-sticky bg-body email-header">
-                <div class="col-auto"><a class="btn btn-primary email-sidebar-width d-none d-lg-block"
-                        href="../../apps/email/compose.html">Compose</a><button
-                        class="btn px-3 btn-phoenix-secondary text-body-tertiary d-lg-none" data-phoenix-toggle="offcanvas"
-                        data-phoenix-target="#emailSidebarColumn"><span class="fa-solid fa-bars"></span></button></div>
-                <div class="col-auto d-lg-none"><a class="btn btn-primary px-3 px-sm-4"
-                        href="../../apps/email/compose.html"> <span class="d-none d-sm-inline-block">Compose</span><span
-                            class="d-sm-none fas fa-plus"></span></a></div>
+                <div class="col-auto">
+                    {{-- <a class="btn btn-primary email-sidebar-width d-none d-lg-block" href="../../apps/email/compose.html">Compose</a> --}}
+                    <button type="button" class="btn btn-primary email-sidebar-width d-none d-lg-block" data-bs-toggle="modal" data-bs-target="#addAccountModal">
+                        <i class="bi bi-plus"></i>
+                        Compose
+                    </button>
+                    <button class="btn px-3 btn-phoenix-secondary text-body-tertiary d-lg-none"
+                        data-phoenix-toggle="offcanvas"data-phoenix-target="#emailSidebarColumn">
+                        <span class="fa-solid fa-bars"></span>
+                    </button>
+                </div>
+
+
+
+                <div class="col-auto d-lg-none">
+                    <a class="btn btn-primary px-3 px-sm-4" type="button" href="../../apps/email/compose.html"
+                        data-bs-toggle="modal" data-bs-target="#addAccountModal">
+                        <span class="d-none d-sm-inline-block">Compose</span>
+                        <span class="d-sm-none fas fa-plus"></span>
+                    </a>
+                </div>
+
+
                 <div class="col-auto flex-1">
                     <div class="search-box w-100">
                         <form class="position-relative"><input class="form-control search-input search" type="search"
@@ -198,22 +214,22 @@
                         {{-- Actions --}}
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                {{-- <button type="button" class="btn btn-success" data-bs-toggle="modal"
                                     data-bs-target="#addAccountModal">
                                     <i class="bi bi-plus"></i>
                                     Thêm tài khoản
-                                </button>
+                                </button> --}}
                                 <button type="button" class="btn btn-primary" id="refreshEmailsButton">
                                     🔄 Làm mới Hộp thư
                                 </button>
                             </div>
-                            <div>
+                            {{-- <div>
                                 <button type="button" class="btn btn-secondary"
                                     onclick="window.location.href='{{ route('home') }}'">
                                     <i class="bi bi-house"></i>
                                     ️🏠 Trang chủ
                                 </button>
-                            </div>
+                            </div> --}}
                         </div>
                         {{-- Popup Form --}}
                         <div class="modal fade" id="addAccountModal" tabindex="-1"
@@ -701,18 +717,20 @@
                                     // SỬA LỖI Ở ĐÂY: Lấy nội dung form HTML, không phải toàn bộ modal-body
                                     // Để không mất tham chiếu input, ta chỉ ẩn/hiện loader bên trong form.
                                     const formContent = editMailAccountForm.innerHTML; // Lưu nội dung form
-                                    editMailAccountForm.innerHTML = '<div class="text-center py-5" id="loaderContent">Đang tải thông tin tài khoản...</div>';
+                                    editMailAccountForm.innerHTML =
+                                        '<div class="text-center py-5" id="loaderContent">Đang tải thông tin tài khoản...</div>';
 
 
                                     try {
                                         // Gửi AJAX GET đến route để lấy thông tin MailAccount
-                                        const response = await fetch(`{{ url('emails/get-mail-account') }}/${currentSelectedAccountId}`, {
-                                            method: 'GET',
-                                            headers: {
-                                                'Accept': 'application/json',
-                                                'X-Requested-With': 'XMLHttpRequest'
-                                            }
-                                        });
+                                        const response = await fetch(
+                                            `{{ url('emails/get-mail-account') }}/${currentSelectedAccountId}`, {
+                                                method: 'GET',
+                                                headers: {
+                                                    'Accept': 'application/json',
+                                                    'X-Requested-With': 'XMLHttpRequest'
+                                                }
+                                            });
 
                                         if (!response.ok) {
                                             const errorData = await response.json();
@@ -725,12 +743,18 @@
                                         editMailAccountForm.innerHTML = formContent;
 
                                         // SỬA LỖI Ở ĐÂY: Lấy LẠI tham chiếu đến các input SAU KHI khôi phục HTML
-                                        const currentEditMailAccountIdInput = document.getElementById('edit_mail_account_id');
-                                        const currentEditMailAccountEmailInput = document.getElementById('edit_mail_account_email');
-                                        const currentEditMailAccountAppPasswordInput = document.getElementById('edit_mail_account_app_password');
-                                        const currentEditMailAccountImapHostInput = document.getElementById('edit_mail_account_imap_host');
-                                        const currentEditMailAccountImapPortInput = document.getElementById('edit_mail_account_imap_port');
-                                        const currentEditMailAccountImapEncryptionInput = document.getElementById('edit_mail_account_imap_encryption');
+                                        const currentEditMailAccountIdInput = document.getElementById(
+                                            'edit_mail_account_id');
+                                        const currentEditMailAccountEmailInput = document.getElementById(
+                                            'edit_mail_account_email');
+                                        const currentEditMailAccountAppPasswordInput = document.getElementById(
+                                            'edit_mail_account_app_password');
+                                        const currentEditMailAccountImapHostInput = document.getElementById(
+                                            'edit_mail_account_imap_host');
+                                        const currentEditMailAccountImapPortInput = document.getElementById(
+                                            'edit_mail_account_imap_port');
+                                        const currentEditMailAccountImapEncryptionInput = document.getElementById(
+                                            'edit_mail_account_imap_encryption');
 
                                         // Điền dữ liệu vào form popup bằng CÁC THAM CHIẾU MỚI
                                         currentEditMailAccountIdInput.value = accountData.id;
@@ -742,18 +766,22 @@
                                         // Xử lý cho thẻ <select>
                                         // Đảm bảo option được chọn dựa trên giá trị từ database
                                         if (currentEditMailAccountImapEncryptionInput) {
-                                            currentEditMailAccountImapEncryptionInput.value = accountData.imap_encryption || 'ssl';
+                                            currentEditMailAccountImapEncryptionInput.value = accountData
+                                                .imap_encryption || 'ssl';
                                         }
 
-                                        document.getElementById('editMailAccountModalLabel').textContent = `Sửa Tài khoản: ${accountData.email}`;
+                                        document.getElementById('editMailAccountModalLabel').textContent =
+                                            `Sửa Tài khoản: ${accountData.email}`;
                                         // Cập nhật action của form để trỏ đến route update của MailAccount
                                         editMailAccountForm.action = `{{ url('emails/update') }}/${accountData.id}`;
-                                        editMailAccountForm.querySelector('input[name="_method"]').value = 'PUT'; // Đặt phương thức là PUT
+                                        editMailAccountForm.querySelector('input[name="_method"]').value =
+                                        'PUT'; // Đặt phương thức là PUT
 
                                         editMailAccountModal.show();
                                     } catch (error) {
                                         console.error('Lỗi khi tải tài khoản để chỉnh sửa:', error);
-                                        showAlert('danger', error.message || 'Không thể tải thông tin tài khoản để chỉnh sửa.');
+                                        showAlert('danger', error.message ||
+                                            'Không thể tải thông tin tài khoản để chỉnh sửa.');
                                         // Khôi phục form về trạng thái ban đầu nếu có lỗi
                                         editMailAccountForm.innerHTML = formContent;
                                     }
@@ -764,7 +792,8 @@
                             editMailAccountForm.addEventListener('submit', async function(event) {
                                 event.preventDefault();
 
-                                const method = editMailAccountForm.querySelector('input[name="_method"]').value; // Lấy phương thức hiện tại (PUT)
+                                const method = editMailAccountForm.querySelector('input[name="_method"]')
+                                .value; // Lấy phương thức hiện tại (PUT)
                                 const submitUrl = editMailAccountForm.action;
 
                                 const formData = new FormData(editMailAccountForm);
@@ -793,7 +822,8 @@
                                     const result = await response.json();
 
                                     if (response.ok) {
-                                        showAlert('success', result.message || 'Tài khoản đã được cập nhật thành công!');
+                                        showAlert('success', result.message ||
+                                        'Tài khoản đã được cập nhật thành công!');
                                         editMailAccountModal.hide();
                                         // Tải lại trang để thấy các thay đổi (nếu có)
                                         setTimeout(() => window.location.reload(), 1000);
@@ -801,7 +831,8 @@
                                         // Hiển thị lỗi validation từ server
                                         let errorMessage = result.message || 'Lỗi khi cập nhật tài khoản.';
                                         if (result.errors) {
-                                            errorMessage += '<br>' + Object.values(result.errors).map(e => e.join(', ')).join('<br>');
+                                            errorMessage += '<br>' + Object.values(result.errors).map(e => e.join(', '))
+                                                .join('<br>');
                                         }
                                         showAlert('danger', errorMessage);
                                     }
@@ -824,11 +855,12 @@
                                 if (editMailAccountImapEncryptionInput) editMailAccountImapEncryptionInput.value = '';
 
                                 document.getElementById('editMailAccountModalLabel').textContent = "Sửa Tài khoản";
-                                editMailAccountForm.querySelector('input[name="_method"]').value = 'PUT'; // Đặt phương thức mặc định là PUT
+                                editMailAccountForm.querySelector('input[name="_method"]').value =
+                                'PUT'; // Đặt phương thức mặc định là PUT
                             }
 
                             // Reset form khi modal đóng
-                            document.getElementById('editMailAccountModal').addEventListener('hidden.bs.modal', function () {
+                            document.getElementById('editMailAccountModal').addEventListener('hidden.bs.modal', function() {
                                 // SỬA LỖI Ở ĐÂY: Khi modal đóng, khôi phục lại form HTML gốc.
                                 // Điều này đảm bảo lần mở tiếp theo form sẽ đúng cấu trúc.
                                 // Sau đó, gọi resetMailAccountForm() để xóa dữ liệu cũ.
