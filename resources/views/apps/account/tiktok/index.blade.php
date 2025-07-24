@@ -61,11 +61,11 @@
                                                     data-bulk-select='{"body":"tiktok-members-table-body"}' /></div>
                                         </th>
                                         <th class="sort align-middle" scope="col" data-sort="email">EMAIL</th>
-                                        <th class="sort align-middle" scope="col" data-sort="password">PASSWORD</th>
-                                        <th class="text-end align-middle" scope="col"></th>
+                                        <th class="sort align-middle" scope="col" data-sort="email">LẤY MÃ</th>
                                         <th class="sort align-middle" scope="col" data-sort="email">ID Tik Tok</th>
                                         <th class="sort align-middle" scope="col" data-sort="followers">FOLLOWERS</th>
                                         <th class="sort align-middle" scope="col" data-sort="status">TRẠNG THÁI</th>
+                                        <th class="sort align-middle" scope="col" data-sort="password"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="list" id="tiktok-members-table-body">
@@ -79,19 +79,8 @@
                                             <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
                                                 {{ $account->socialnetworkDetail->mailAccount->email ?? '(chưa có)' }}
                                             </td>
-                                            <td class="align-middle white-space-nowrap">
-                                                <span class="password-text" id="passwordText-{{ $account->id }}"
-                                                    data-actual-password="{{ $account->password }}"
-                                                    style="margin-right: 8px; vertical-align: middle;">********</span>
-                                                <button type="button"
-                                                    class="btn btn-sm btn-outline-secondary btn-request-pin"
-                                                    data-bs-toggle="modal" data-bs-target="#verifyPinModal"
-                                                    data-span-id="passwordText-{{ $account->id }}" title="Hiện mật khẩu"
-                                                    style="padding: 0.2rem 0.5rem; line-height: 1; vertical-align: middle;">
-                                                    <i class="fas fa-eye" aria-hidden="true"></i>
-                                                </button>
-                                            </td>
-                                            <td class="text-end align-middle white-space-nowrap">
+                                            
+                                            <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
                                                 @php
                                                     $isInactive =
                                                         isset($account->socialnetworkDetail) &&
@@ -123,8 +112,9 @@
                                                 <span
                                                     class="badge badge-phoenix fs-10 badge-phoenix-{{ $badgeClass }}">{{ ucfirst($status) }}</span>
                                             </td>
-
-
+                                            <td class="align-middle white-space-nowrap">
+                                                {{ $account->username}}
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
