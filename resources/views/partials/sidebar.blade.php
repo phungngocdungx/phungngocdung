@@ -199,7 +199,7 @@
                             </div>
                         </a>
                     </div><!-- parent pages-->
-                    <div class="nav-item-wrapper">
+                    {{-- <div class="nav-item-wrapper">
                         <a class="nav-link label-1" href="{{ $user->hasRole('user') ? '#' : route('tiktok.index') }}"
                             onclick="{{ $user->hasRole('user') ? 'return false;' : '' }}"
                             style="{{ $user->hasRole('user') ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed;' : '' }}"
@@ -213,7 +213,7 @@
                                 </span>
                             </div>
                         </a>
-                    </div><!-- parent pages-->
+                    </div><!-- parent pages--> --}}
                     <div class="nav-item-wrapper">
                         <a class="nav-link dropdown-indicator label-1" href="#nv-system-management" role="button"
                             data-bs-toggle="collapse" aria-expanded="false" aria-controls="nv-system-management">

@@ -12,30 +12,30 @@ use App\Http\Controllers\Web\Accounts\AdminController;
 use App\Http\Controllers\Web\Accounts\ManageController;
 
 Route::get('/', [HomeController::class, 'index'])->middleware('auth')->name('home');
-Route::get('/pJM', [HomeController::class, 'pJM'])->name('pJM');
-Route::get('/product', [HomeController::class, 'product'])->name('product');
-Route::get('/add-product', [HomeController::class, 'addProduct'])->name('addProduct');
+Route::get('/pJM', [HomeController::class, 'pJM'])->middleware('auth')->name('pJM');
+Route::get('/product', [HomeController::class, 'product'])->middleware('auth')->name('product');
+Route::get('/add-product', [HomeController::class, 'addProduct'])->middleware('auth')->name('addProduct');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Route quản lý accounts System
-Route::get('/tiktok', [AccountController::class, 'showAccTT'])->name('tiktok.index');// Tik tok
+Route::get('/tiktok', [AccountController::class, 'showAccTT'])->middleware('auth')->name('tiktok.index');// Tik tok
 
-Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');// Admin
-Route::get('/admin/edit/{id}', [AdminController::class, 'edit'])->name('admin.edit');
-Route::post('/admin/update/{id}', [AdminController::class, 'update'])->name('admin.update');
+Route::get('/admin', [AdminController::class, 'index'])->middleware('auth')->name('admin.index');// Admin
+Route::get('/admin/edit/{id}', [AdminController::class, 'edit'])->middleware('auth')->name('admin.edit');
+Route::post('/admin/update/{id}', [AdminController::class, 'update'])->middleware('auth')->name('admin.update');
 // Route riêng để phân quyền (nếu bạn muốn modal hoặc chức năng riêng biệt cho phân quyền)
 // Nếu bạn tích hợp vào modal chỉnh sửa chính, route này không cần thiết.
-Route::post('/admin/assign-roles/{id}', [AdminController::class, 'assignRoles'])->name('admin.assign_roles');// Phân quyền roles
+Route::post('/admin/assign-roles/{id}', [AdminController::class, 'assignRoles'])->middleware('auth')->name('admin.assign_roles');// Phân quyền roles
 
-Route::get('/manage', [ManageController::class, 'index'])->name('manage.index');// Quản lý tài khoản
+Route::get('/manage', [ManageController::class, 'index'])->middleware('auth')->name('manage.index');// Quản lý tài khoản
 
-Route::get('/show', [AccountController::class, 'show'])->name('show');// Hàm này dùng để show accounts các nề tảng
+Route::get('/show', [AccountController::class, 'show'])->middleware('auth')->name('show');// Hàm này dùng để show accounts các nề tảng
 
 // Nhóm Route quản lý Accounts Family
-Route::prefix('accounts')->name('accounts.')->group(function () {
+Route::prefix('accounts')->middleware('auth')->name('accounts.')->group(function () {
     // Route quản lý Accounts Family
     Route::get('/', [AccountController::class, 'index'])->name('index');
     Route::get('/create', [AccountController::class, 'create'])->name('create');
@@ -50,7 +50,7 @@ Route::prefix('accounts')->name('accounts.')->group(function () {
 });
 
 // Nhóm Route cho Email
-Route::prefix('emails')->name('emails.')->group(function () {
+Route::prefix('emails')->middleware('auth')->name('emails.')->group(function () {
     Route::get('/', [EmailController::class, 'index'])->name('index');
     Route::get('/create', [EmailController::class, 'create'])->name('create');
     Route::post('/', [EmailController::class, 'store'])->name('store');
