@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>TikTok Username Extractor</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2em;
+      background: #f9f9f9;
+    }
+
+    input,
+    button {
+      margin-top: 1em;
+      margin-right: 1em;
+    }
+
+    pre {
+      background: #eee;
+      padding: 1em;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>📦 Tool Extract TikTok Usernames từ nhiều file JSON</h2>
+
+  <input type="file" id="fileInput" accept=".json" multiple />
+  <br />
+  <button onclick="downloadJSON()">⬇️ Tải kết quả .json</button>
+  <button onclick="copyOutput()">📋 Copy toàn bộ</button>
+
+  <h3>Kết quả:</h3>
+  <pre id="output">Chưa có dữ liệu</pre>
+
+  <script>
+    let extracted = [];
+
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+      const files = e.target.files;
+      if (!files.length) return;
+
+      extracted = []; // reset dữ liệu
+      let filesProcessed = 0;
+      let totalOutput = [];
+
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          try {
+            const json = JSON.parse(event.target.result);
+            const data = json.data || [];
+
+            const results = data.map(item => {
+              const match = item.link?.match(/tiktok\.com\/@([\w\._\-]+)/i);
+              return match ? { id: match[1] } : null;
+            }).filter(Boolean);
+
+            extracted = extracted.concat(results);
+            totalOutput = totalOutput.concat(results.map(obj => JSON.stringify(obj)));
+
+            filesProcessed++;
+            if (filesProcessed === files.length) {
+              const count = extracted.length;
+              const header = `✅ Đã trích xuất ${count} username:\n\n`;
+              document.getElementById('output').textContent = header + totalOutput.join(",\n");
+            }
+
+          } catch (err) {
+            document.getElementById('output').textContent = "❌ JSON không hợp lệ trong file: " + file.name + "\n" + err.message;
+          }
+        };
+        reader.readAsText(file);
+      });
+    });
+
+    function downloadJSON() {
+      if (!extracted.length) {
+        alert("Chưa có dữ liệu để tải!");
+        return;
+      }
+      const blob = new Blob([JSON.stringify(extracted, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "tiktok_usernames.json";
+      link.click();
+    }
+
+    function copyOutput() {
+      const text = document.getElementById('output').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("✅ Đã copy toàn bộ kết quả!");
+      }).catch(err => {
+        alert("❌ Lỗi khi copy: " + err);
+      });
+    }
+  </script>
+</body>
+
+</html>

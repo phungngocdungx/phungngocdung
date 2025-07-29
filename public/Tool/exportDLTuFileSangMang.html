@@ -1,0 +1,82 @@
+<!-- Tool Hỗ Trợ Chuyển Đổi File txt sang Object JSON -->
+<!-- Coppy Username, id Acc Tik Tok Đã Fl Nó Sẽ Chuyển Sang Object JSON Để Chạy Unfollower -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chuyển Đổi TikTok List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    textarea {
+      width: 100%;
+      height: 300px;
+      padding: 10px;
+      font-family: monospace;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background: #007bff;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    pre {
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Chuyển danh sách TikTok thành mảng JSON</h2>
+
+  <textarea id="input" placeholder="Dán nội dung từ ex.txt vào đây..."></textarea>
+  <br />
+  <button onclick="convert()">Chuyển đổi</button>
+
+  <h3>Kết quả:</h3>
+  <pre id="output"></pre>
+
+  <script>
+    function convert() {
+      const input = document.getElementById('input').value.trim();
+      const lines = input.split('\n').map(line => line.trim()).filter(line => line !== "");
+      const result = [];
+
+      for (let i = 0; i < lines.length; i += 2) {
+        const name = lines[i];
+        const id = lines[i + 1] || "";
+        result.push({ name, id });
+      }
+
+      // Chuyển thành định dạng đẹp
+      const output = result.map(entry => `{ name: "${entry.name}", id: "${entry.id}" },`).join('\n');
+      document.getElementById('output').textContent = output;
+    }
+  </script>
+
+</body>
+</html>

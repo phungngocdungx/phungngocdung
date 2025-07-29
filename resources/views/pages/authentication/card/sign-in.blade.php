@@ -109,11 +109,13 @@
                                             </a>
                                             <h3 class="text-body-highlight">Sign In</h3>
                                             <p class="text-body-tertiary">Sign in vào hệ thống của Phùng Ngọc Dũng</p>
-                                        </div><button class="btn btn-phoenix-secondary w-100 mb-3"><span
-                                                class="fab fa-google text-danger me-2 fs-9"></span>Sign in with
-                                            google</button><button class="btn btn-phoenix-secondary w-100"><span
-                                                class="fab fa-facebook text-primary me-2 fs-9"></span>Sign in with
-                                            facebook</button>
+                                        </div>
+                                        <a href="{{ route('auth.google') }}" class="btn btn-phoenix-secondary w-100 mb-3">
+                                            <span class="fab fa-google text-danger me-2 fs-9"></span>Sign in with google
+                                        </a>
+                                        <a href="{{ route('auth.facebook') }}" class="btn btn-phoenix-secondary w-100">
+                                            <span class="fab fa-facebook text-primary me-2 fs-9"></span>Sign in with facebook
+                                        </a>
                                         <div class="position-relative">
                                             <hr class="bg-body-secondary mt-5 mb-4" />
                                             <div class="divider-content-center bg-body-emphasis">or use email</div>
