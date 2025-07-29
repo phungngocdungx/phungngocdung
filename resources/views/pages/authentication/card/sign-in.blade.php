@@ -110,11 +110,15 @@
                                             <h3 class="text-body-highlight">Sign In</h3>
                                             <p class="text-body-tertiary">Sign in vào hệ thống của Phùng Ngọc Dũng</p>
                                         </div>
-                                        <a href="{{ route('auth.google') }}" class="btn btn-phoenix-secondary w-100 mb-3">
-                                            <span class="fab fa-google text-danger me-2 fs-9"></span>Sign in with google
+                                        <a href="{{ route('auth.google') }}"
+                                            class="btn btn-phoenix-secondary w-100 mb-3">
+                                            <span class="fab fa-google text-danger me-2 fs-9"></span>Sign in with
+                                            google
                                         </a>
-                                        <a href="{{ route('auth.facebook') }}" class="btn btn-phoenix-secondary w-100">
-                                            <span class="fab fa-facebook text-primary me-2 fs-9"></span>Sign in with facebook
+                                        <a href="{{ route('auth.facebook') }}"
+                                            class="btn btn-phoenix-secondary w-100">
+                                            <span class="fab fa-facebook text-primary me-2 fs-9"></span>Sign in with
+                                            facebook
                                         </a>
                                         <div class="position-relative">
                                             <hr class="bg-body-secondary mt-5 mb-4" />
@@ -170,13 +174,73 @@
                                                             for="basic-checkbox">Remember me</label></div>
                                                 </div>
                                                 <div class="col-auto">
-                                                    <a class="fs-9 fw-semibold"
-                                                        href="#">Forgot
+                                                    <a class="fs-9 fw-semibold" href="#">Forgot
                                                         Password?</a>
                                                 </div>
                                             </div>
+
+                                            {{-- Thông báo cho Login Google, Fb --}}
+                                            <div class="toast-container position-fixed top-0 end-0 p-3">
+                                                @if (session('success'))
+                                                    <div class="toast align-items-center text-bg-success border-0"
+                                                        role="alert" aria-live="assertive" aria-atomic="true">
+                                                        <div class="d-flex">
+                                                            <div class="toast-body">
+                                                                {{ session('success') }}
+                                                            </div>
+                                                            <button type="button"
+                                                                class="btn-close btn-close-white me-2 m-auto"
+                                                                data-bs-dismiss="toast" aria-label="Close"></button>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                @if (session('error'))
+                                                    <div class="toast align-items-center text-bg-danger border-0"
+                                                        role="alert" aria-live="assertive" aria-atomic="true">
+                                                        <div class="d-flex">
+                                                            <div class="toast-body">
+                                                                {{ session('error') }}
+                                                            </div>
+                                                            <button type="button"
+                                                                class="btn-close btn-close-white me-2 m-auto"
+                                                                data-bs-dismiss="toast" aria-label="Close"></button>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                @if (session('warning'))
+                                                    <div class="toast align-items-center text-bg-warning border-0"
+                                                        role="alert" aria-live="assertive" aria-atomic="true">
+                                                        <div class="d-flex">
+                                                            <div class="toast-body">
+                                                                {{ session('warning') }}
+                                                            </div>
+                                                            <button type="button"
+                                                                class="btn-close btn-close-white me-2 m-auto"
+                                                                data-bs-dismiss="toast" aria-label="Close"></button>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+
+                                            <script>
+                                                // JS cho phần thông báo Login Google FB
+                                                document.addEventListener('DOMContentLoaded', function() {
+                                                    var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+                                                    var toastList = toastElList.map(function(toastEl) {
+                                                        return new bootstrap.Toast(toastEl, {
+                                                            autohide: true,
+                                                            delay: 5000
+                                                        }) // 5 giây
+                                                    })
+                                                    toastList.forEach(toast => toast.show())
+                                                });
+                                            </script>
+
                                             <button class="btn btn-primary w-100 mb-3">Sign In</button>
-                                            <div class="text-center"><a class="fs-9 fw-bold" href="#!">Chưa có Account liên hệ Zalo - 0965336741</a></div>
+                                            <div class="text-center"><a class="fs-9 fw-bold" href="#!">Chưa có
+                                                    Account liên hệ Zalo - 0965336741</a></div>
                                         </form>
                                     </div>
                                 </div>
@@ -369,7 +433,7 @@
                 target="_blank">Purchase template</a>
         </div>
     </div>
-    
+
     <script>
         function togglePassword() {
             const passwordInput = document.getElementById('password');

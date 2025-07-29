@@ -10,6 +10,61 @@
     <div id="pageMessages" style="position: fixed; top: 80px; right: 20px; z-index: 1056; width: auto; max-width: 400px;">
         {{-- Thông báo sẽ được JS chèn vào đây --}}
     </div>
+    {{-- Thông báo cho Login Google, Fb --}}
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        @if (session('success'))
+            <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {{ session('success') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {{ session('error') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        @if (session('warning'))
+            <div class="toast align-items-center text-bg-warning border-0" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {{ session('warning') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+    </div>
+
+    <script>
+        // JS cho phần thông báo Login Google FB
+        document.addEventListener('DOMContentLoaded', function() {
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+            var toastList = toastElList.map(function(toastEl) {
+                return new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 5000
+                }) // 5 giây
+            })
+            toastList.forEach(toast => toast.show())
+        });
+    </script>
     <div class="content">
         <nav class="mb-3" aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
@@ -79,7 +134,7 @@
                                             <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
                                                 {{ $account->socialnetworkDetail->mailAccount->email ?? '(chưa có)' }}
                                             </td>
-                                            
+
                                             <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
                                                 @php
                                                     $isInactive =
@@ -94,7 +149,8 @@
                                                 </button>
                                             </td>
                                             <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
-                                                <a href="https://www.tiktok.com/{{ $account->socialnetworkDetail->tiktok_user_id ?? '(chưa có)' }}" style="color: #9FA6BC; text-decoration: none">{{ $account->socialnetworkDetail->tiktok_user_id ?? '(chưa có)' }}</a>
+                                                <a href="https://www.tiktok.com/{{ $account->socialnetworkDetail->tiktok_user_id ?? '(chưa có)' }}"
+                                                    style="color: #9FA6BC; text-decoration: none">{{ $account->socialnetworkDetail->tiktok_user_id ?? '(chưa có)' }}</a>
                                             </td>
                                             <td class="followers align-middle white-space-nowrap ">
                                                 {{ number_format($account->socialnetworkDetail->follower_count ?? 0) . ' người theo dõi' }}
@@ -113,7 +169,7 @@
                                                     class="badge badge-phoenix fs-10 badge-phoenix-{{ $badgeClass }}">{{ ucfirst($status) }}</span>
                                             </td>
                                             <td class="align-middle white-space-nowrap">
-                                                {{ $account->username}}
+                                                {{ $account->username }}
                                             </td>
                                         </tr>
                                     @empty

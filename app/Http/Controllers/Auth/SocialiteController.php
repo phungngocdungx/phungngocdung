@@ -36,12 +36,14 @@ class SocialiteController extends Controller
                 // Check user roles after successful login
                 // Only allow 'admin' (role_id 1) and 'manage' (role_id 2) roles
                 if ($user->hasRole('admin') || $user->hasRole('manage')) {
-                    return redirect()->intended('/')->with('success', 'Đăng nhập bằng Google thành công!');
+                    return redirect()->route('home')->with('success', 'Đăng nhập bằng Google thành công!');
+                } elseif ($user->hasRole('manage')) {
+                    return redirect()->route(in_array($user->id, [2, 3]) ? 'show' : ($user->id === 5 ? 'home' : 'home'))->with('success', 'Đăng nhập bằng Google thành công!');
                 } else {
                     // If the user has 'user' role (role_id 3) or any other unauthorized role, log them out
-                    Auth::logout();
-                    return redirect()->route('login')->with('error', 'Tài khoản của bạn không có quyền truy cập.');
+                    return redirect()->route('tiktok.index')->with('success', 'Đăng nhập bằng Google thành công!');
                 }
+
             } else {
                 // User doesn't exist, prevent new registration and show an error message
                 return redirect()->route('login')->with('error', 'Hiện không hỗ trợ thêm mới tài khoản. Vui lòng liên hệ quản trị viên.');
@@ -77,12 +79,14 @@ class SocialiteController extends Controller
                 // Check user roles after successful login
                 // Only allow 'admin' (role_id 1) and 'manage' (role_id 2) roles
                 if ($user->hasRole('admin') || $user->hasRole('manage')) {
-                    return redirect()->intended('/')->with('success', 'Đăng nhập bằng Facebook thành công!');
+                    return redirect()->route('home')->with('success', 'Đăng nhập bằng Google thành công!');
+                } elseif ($user->hasRole('manage')) {
+                    return redirect()->route(in_array($user->id, [2, 3]) ? 'show' : ($user->id === 5 ? 'home' : 'home'))->with('success', 'Đăng nhập bằng Google thành công!');
                 } else {
                     // If the user has 'user' role (role_id 3) or any other unauthorized role, log them out
-                    Auth::logout();
-                    return redirect()->route('login')->with('error', 'Tài khoản của bạn không có quyền truy cập.');
+                    return redirect()->route('tiktok.index')->with('success', 'Đăng nhập bằng Google thành công!');
                 }
+                
             } else {
                 // User doesn't exist, prevent new registration and show an error message
                 return redirect()->route('login')->with('error', 'Tài khoản của bạn chưa được đăng ký. Vui lòng liên hệ quản trị viên.');
