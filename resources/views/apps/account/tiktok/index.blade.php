@@ -137,17 +137,50 @@
 
                                             <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
                                                 @php
-                                                    $isInactive =
-                                                        isset($account->socialnetworkDetail) &&
-                                                        $account->socialnetworkDetail->status !== 'active';
+                                                    $user = auth()->user();
+                                                    $userId = $user->id;
+
+                                                    // ✅ Kiểm tra quyền Admin (dành cho quan hệ many-to-many roles)
+                                                    $isAdmin = $user->roles->contains('name', 'admin');
+
+                                                    // ✅ Lấy email từ mailAccount (nếu có)
+                                                    $email = optional($account->socialnetworkDetail->mailAccount)
+                                                        ->email;
+
+                                                    // ✅ Danh sách email đặc biệt (chỉ dành cho user ID 7)
+                                                    $allowedEmails = [
+                                                        'nguyenlinh18810@gmail.com',
+                                                        'phungngocdung25@gmail.com',
+                                                        'phungngocdung96@gmail.com',
+                                                    ];
+
+                                                    // ✅ Lấy status và kiểm tra active/inactive
+                                                    $status = optional($account->socialnetworkDetail)->status;
+                                                    $isActive = $status === 'active';
+
+                                                    // ✅ Logic điều kiện cho phép nhấn nút "Lấy mã"
+                                                    $canClick = match (true) {
+                                                        $isAdmin => true, // Admin luôn được phép
+                                                        $userId === 7 && in_array($email, $allowedEmails)
+                                                            => true, // User ID 7 với email cho phép
+                                                        $isActive => true, // Các user khác chỉ khi status active
+                                                        default => false,
+                                                    };
                                                 @endphp
 
-                                                <button class="btn btn-success"
-                                                    {{ $isInactive ? 'style=pointer-events:none;opacity:0.6;' : '' }}
-                                                    {{ $isInactive ? '' : "onclick=window.location.href='" . url('/emails?account_id=' . $account->socialnetworkDetail->mail_account_id) . "'" }}>
-                                                    <i class="fas fa-envelope-open-text fa-fw me-2"></i>Lấy mã
-                                                </button>
+                                                @if ($canClick)
+                                                    <button class="btn btn-success"
+                                                        onclick="window.location.href='{{ url('/emails?account_id=' . $account->socialnetworkDetail->mail_account_id) }}'">
+                                                        <i class="fas fa-envelope-open-text fa-fw me-2"></i>Lấy mã
+                                                    </button>
+                                                @else
+                                                    <button class="btn btn-secondary"
+                                                        style="pointer-events: none; opacity: 0.6;">
+                                                        <i class="fas fa-envelope-open-text fa-fw me-2"></i>Không cho phép
+                                                    </button>
+                                                @endif
                                             </td>
+
                                             <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
                                                 <a href="https://www.tiktok.com/{{ $account->socialnetworkDetail->tiktok_user_id ?? '(chưa có)' }}"
                                                     style="color: #9FA6BC; text-decoration: none">{{ $account->socialnetworkDetail->tiktok_user_id ?? '(chưa có)' }}</a>
