@@ -231,18 +231,8 @@
                         <div class="parent-wrapper label-1">
                             <ul class="nav collapse parent" data-bs-parent="#navbarVerticalCollapse"
                                 id="nv-system-management">
-                                <li class="nav-item"><a class="nav-link" href="apps/crm/analytics.html">
-                                        <div class="d-flex align-items-center"><span
-                                                class="nav-link-text">UnFl Except ID</span></div>
-                                    </a><!-- more inner pages-->
-                                </li>
-                                <li class="nav-item"><a class="nav-link" href="apps/crm/analytics.html">
-                                        <div class="d-flex align-items-center"><span
-                                                class="nav-link-text">UnFl By ID</span></div>
-                                    </a><!-- more inner pages-->
-                                </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="/Tool/DocFileJS.blade.php">
+                                    <a class="nav-link" href="/Tool/DocFileJS.html">
                                         <div class="d-flex align-items-center">
                                             <span class="nav-link-text">All Tool</span>
                                         </div>
