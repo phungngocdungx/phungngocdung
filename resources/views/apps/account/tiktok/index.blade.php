@@ -182,8 +182,8 @@
                                             </td>
 
                                             <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
-                                                <a href="https://www.tiktok.com/{{ $account->socialnetworkDetail->tiktok_user_id ?? '(chưa có)' }}"
-                                                    style="color: #9FA6BC; text-decoration: none">{{ $account->socialnetworkDetail->tiktok_user_id ?? '(chưa có)' }}</a>
+                                                <a href="{{ 'https://www.tiktok.com/@' . ($account->socialnetworkDetail->tiktok_user_id ?? '(chưa có)') }}" target="_blank"
+                                                    style="color: #9FA6BC; text-decoration: none">{{ '@' . ($account->socialnetworkDetail->tiktok_user_id ?? '(chưa có)') }}</a>
                                             </td>
                                             <td class="followers align-middle white-space-nowrap ">
                                                 {{ number_format($account->socialnetworkDetail->follower_count ?? 0) . ' người theo dõi' }}
