@@ -27,7 +27,8 @@
             <div class="row gx-lg-6 gx-3 py-4 z-2 position-sticky bg-body email-header">
                 <div class="col-auto">
                     {{-- <a class="btn btn-primary email-sidebar-width d-none d-lg-block" href="../../apps/email/compose.html">Compose</a> --}}
-                    <button type="button" class="btn btn-primary email-sidebar-width d-none d-lg-block" data-bs-toggle="modal" data-bs-target="#addAccountModal">
+                    <button type="button" class="btn btn-primary email-sidebar-width d-none d-lg-block"
+                        data-bs-toggle="modal" data-bs-target="#addAccountModal">
                         <i class="bi bi-plus"></i>
                         Compose
                     </button>
@@ -417,8 +418,19 @@
                                                     <a class="dropdown-item text-danger" href="#!">Delete</a>
                                                 </div>
                                             </div>
+                                            
                                             <span
-                                                class="fs-10 fw-bold">{{ $email->date ? $email->date->format('d/m/Y H:i:s') : 'Không rõ' }}</span>
+                                                class="fs-10 fw-bold">{{ $email->date
+                                                    ? ($email->date->setTimezone('Asia/Ho_Chi_Minh')->greaterThan(\Carbon\Carbon::now('Asia/Ho_Chi_Minh')->subDay())
+                                                        ? $email->date->setTimezone('Asia/Ho_Chi_Minh')->diffForHumans(\Carbon\Carbon::now('Asia/Ho_Chi_Minh'), ['parts' => 2, 'short' => false])
+                                                        : ($email->date->setTimezone('Asia/Ho_Chi_Minh')->greaterThan(\Carbon\Carbon::now('Asia/Ho_Chi_Minh')->subDays(7))
+                                                            ? $email->date->setTimezone('Asia/Ho_Chi_Minh')->format('H:i j \t\h\g n, Y') .
+                                                                ' (' .
+                                                                $email->date->setTimezone('Asia/Ho_Chi_Minh')->diffForHumans(\Carbon\Carbon::now('Asia/Ho_Chi_Minh')) .
+                                                                ')'
+                                                            : $email->date->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s')))
+                                                    : 'Không rõ' }}
+                                            </span>
                                         </div>
                                     </div>
                                     <div class="ms-4 mt-n3 mt-sm-0 ms-sm-11">
@@ -775,7 +787,7 @@
                                         // Cập nhật action của form để trỏ đến route update của MailAccount
                                         editMailAccountForm.action = `{{ url('emails/update') }}/${accountData.id}`;
                                         editMailAccountForm.querySelector('input[name="_method"]').value =
-                                        'PUT'; // Đặt phương thức là PUT
+                                            'PUT'; // Đặt phương thức là PUT
 
                                         editMailAccountModal.show();
                                     } catch (error) {
@@ -793,7 +805,7 @@
                                 event.preventDefault();
 
                                 const method = editMailAccountForm.querySelector('input[name="_method"]')
-                                .value; // Lấy phương thức hiện tại (PUT)
+                                    .value; // Lấy phương thức hiện tại (PUT)
                                 const submitUrl = editMailAccountForm.action;
 
                                 const formData = new FormData(editMailAccountForm);
@@ -823,7 +835,7 @@
 
                                     if (response.ok) {
                                         showAlert('success', result.message ||
-                                        'Tài khoản đã được cập nhật thành công!');
+                                            'Tài khoản đã được cập nhật thành công!');
                                         editMailAccountModal.hide();
                                         // Tải lại trang để thấy các thay đổi (nếu có)
                                         setTimeout(() => window.location.reload(), 1000);
@@ -856,7 +868,7 @@
 
                                 document.getElementById('editMailAccountModalLabel').textContent = "Sửa Tài khoản";
                                 editMailAccountForm.querySelector('input[name="_method"]').value =
-                                'PUT'; // Đặt phương thức mặc định là PUT
+                                    'PUT'; // Đặt phương thức mặc định là PUT
                             }
 
                             // Reset form khi modal đóng
