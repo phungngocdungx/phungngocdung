@@ -166,16 +166,13 @@ class AccountController extends Controller
             $account->password = $validatedData['password']; // Mutator vẫn hoạt động cho password
             $account->note = $validatedData['note'] ?? null; // Mutator vẫn hoạt động cho note
 
-            // Xử lý encrypted_password_2 cho VNeID (thủ công)
-            // if ($validatedData['platform_id'] == 3 && isset($validatedData['encrypted_password_2'])) {
-            //     $account->encrypted_password_2 = Crypt::encryptString($validatedData['encrypted_password_2']);
-            // }
+            // Xử lý encrypted_password_2 cho VNeID (thủ công, vì không dùng mutator tự động cho cột này)
             if (($validatedData['platform_id'] == 1 || $validatedData['platform_id'] == 3 || $validatedData['platform_id'] == 7)
                 && isset($validatedData['encrypted_password_2'])
             ) {
                 $account->encrypted_password_2 = Crypt::encryptString($validatedData['encrypted_password_2']);
             } else {
-                $account->encrypted_password_2 = null; // Đảm bảo là null nếu không phải VNeID
+                $account->encrypted_password_2 = null; // Nếu không phải VNeID hoặc trường không có
             }
 
             $account->save();
@@ -337,7 +334,7 @@ class AccountController extends Controller
             }
 
             // Xử lý encrypted_password_2 cho VNeID (thủ công, vì không dùng mutator tự động cho cột này)
-            if ($validatedData['platform_id'] == 3) {
+            if ($validatedData['platform_id'] == 1 || $validatedData['platform_id'] == 3 || $validatedData['platform_id'] == 7) {
                 if (isset($validatedData['encrypted_password_2'])) {
                     $account->encrypted_password_2 = Crypt::encryptString($validatedData['encrypted_password_2']);
                 } else {

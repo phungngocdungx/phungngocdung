@@ -330,7 +330,6 @@
         @include('partials.footer')
     </div>
 
-    </div>
     {{-- Popup xác thực Mã PIN --}}
     <div class="modal fade" id="verifyPinModal" tabindex="-1" aria-labelledby="verifyPinModalLabel"
         aria-hidden="true">
@@ -361,6 +360,8 @@
             </div>
         </div>
     </div>
+
+    {{-- Popup xác thực Mã PIN --}}
     <div class="modal fade" id="verifyPinModal2" tabindex="-1" aria-labelledby="verifyPinModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -390,6 +391,7 @@
             </div>
         </div>
     </div>
+
     {{-- Popup thêm tài khoản mới --}}
     <div class="modal fade" id="addAccountModal" tabindex="-1" aria-labelledby="addAccountModalLabel"
         aria-hidden="true">
@@ -747,28 +749,14 @@
                                     {{-- Fields for VNeID (specific to VNeID - chỉ có encrypted_password_2) --}}
                                     <div id="editVneidSpecificFields" style="display: none;">
                                         <div class="mb-3">
-                                            <label for="edit_encrypted_password_2" class="form-label">Mật khẩu cấp 2
-                                                (VNeID)</label>
+                                            <label for="edit_encrypted_password_2" id="edit_encrypted_password_2_label"
+                                                class="form-label"></label>
                                             <div class="input-group">
                                                 <input type="password" class="form-control"
                                                     id="edit_encrypted_password_2" name="encrypted_password_2"
                                                     autocomplete="new-password">
                                                 <button class="btn btn-outline-secondary" type="button"
                                                     id="toggleEditVneidPassword2"><i class="fas fa-eye"></i></button>
-                                                {{-- Đã đổi ID --}}
-                                            </div>
-                                        </div>
-                                    </div> {{-- End editMessagesSpecificFields --}}
-                                    <div id="editMessagesSpecificFields" style="display: none;">
-                                        <div class="mb-3">
-                                            <label for="edit_encrypted_password_2" class="form-label">Mật khẩu cấp 2
-                                                (Messages)</label>
-                                            <div class="input-group">
-                                                <input type="password" class="form-control"
-                                                    id="edit_encrypted_password_2" name="encrypted_password_2"
-                                                    autocomplete="new-password">
-                                                <button class="btn btn-outline-secondary" type="button"
-                                                    id="toggleEditMessagesPassword2"><i class="fas fa-eye"></i></button>
                                                 {{-- Đã đổi ID --}}
                                             </div>
                                         </div>
@@ -1182,6 +1170,7 @@
                 const editTiktokSpecificFields = document.getElementById('editTiktokSpecificFields');
                 const editVneidSpecificFields = document.getElementById('editVneidSpecificFields');
                 const editPlatformDetailsTitle = document.getElementById('editPlatformDetailsTitle');
+                const editPlatformDetailsLable = document.getElementById('edit_encrypted_password_2_label');
                 const editAccountStatusField = document.getElementById('edit_account_status');
                 const editEncryptedPassword2Field = document.getElementById(
                     'edit_encrypted_password_2'); // ID đã được đổi
@@ -1232,10 +1221,22 @@
                         if (editPlatformDetailsTitle) editPlatformDetailsTitle.textContent =
                             'Thông tin chi tiết TikTok';
                         if (editTiktokSpecificFields) editTiktokSpecificFields.style.display = 'block';
-                    } else if (selectedPlatformId === '3') { // VNeID
+                    } else if (['1', '3', '7'].includes(selectedPlatformId)) { // Zalo, VNeID và các ID khác
                         if (editSocialNetworkDetailsFields) editSocialNetworkDetailsFields.style.display = 'block';
-                        if (editPlatformDetailsTitle) editPlatformDetailsTitle.textContent =
-                            'Thông tin chi tiết VNeID';
+                        if (editPlatformDetailsTitle) {
+                            if (selectedPlatformId === '1') {
+                                editPlatformDetailsTitle.textContent = 'Thông tin chi tiết Zalo';
+                            } else if (selectedPlatformId === '3' || selectedPlatformId === '7') {
+                                editPlatformDetailsTitle.textContent = 'Thông tin chi tiết VNeID';
+                            }
+                        }
+                        if (editPlatformDetailsLable) {
+                            if (selectedPlatformId === '1') {
+                                editPlatformDetailsLable.textContent = 'Pass sao lưu tin nhắn Zalo';
+                            } else if (selectedPlatformId === '3' || selectedPlatformId === '7') {
+                                editPlatformDetailsLable.textContent = 'Mật khẩu cấp 2 VNeID';
+                            }
+                        }
                         if (editVneidSpecificFields) editVneidSpecificFields.style.display = 'block';
                     }
                 }
@@ -1335,9 +1336,8 @@
                                     }
 
                                     // Gán giá trị encrypted_password_2 nếu là VNeID (không phụ thuộc socialnetworkDetail)
-                                    if (data.platform.id === 3) {
-                                        if (editEncryptedPassword2Field)
-                                            editEncryptedPassword2Field.value = data.account
+                                    if (editEncryptedPassword2Field) {
+                                        editEncryptedPassword2Field.value = data.account
                                             .encrypted_password_2 || '';
                                     }
 
@@ -1359,8 +1359,10 @@
                                 }
                             })
                             .catch(error => {
-                                console.error('Lỗi Fetch Edit Data:', error);
-                                showUIMessage('Lỗi tải dữ liệu: ' + error.message, 'danger');
+                                hideLoader();
+                                console.error('Error fetching account details:', error);
+                                showToast('danger', 'Lỗi',
+                                'Không thể lấy thông tin tài khoản.');
                             });
                     });
                 });
