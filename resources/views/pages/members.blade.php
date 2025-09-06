@@ -442,7 +442,7 @@
                         </div>
 
                         {{-- Form thêm Platform mới (ban đầu ẩn) --}}
-                        <div id="newPlatformFormContainer" class="p-3 border rounded mb-3 shadow-sm bg-light"
+                        <div id="newPlatformFormContainer" class="p-3 border rounded mb-3 shadow-sm"
                             style="display:none;">
                             <h6 class="mb-3">Tạo Nền tảng mới</h6>
                             <div id="ajaxNewPlatformErrors" class="alert alert-danger" style="display:none;">
