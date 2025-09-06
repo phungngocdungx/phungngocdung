@@ -44,18 +44,18 @@ Route::get('/auth/facebook/callback', [SocialiteController::class, 'handleFacebo
 //  ROUTE QUẢN LÝ TẤT CẢ CÁC TÀI KHỎA CỦA HỆ THỐNG 
 //  ===============================================
 // Route quản lý accounts System
-Route::get('/tiktok', [AccountController::class, 'showAccTT'])->middleware('auth')->name('tiktok.index');// Tik tok
+Route::get('/tiktok', [AccountController::class, 'showAccTT'])->middleware('auth')->name('tiktok.index'); // Tik tok
 
-Route::get('/admin', [AdminController::class, 'index'])->middleware('auth')->name('admin.index');// Admin
+Route::get('/admin', [AdminController::class, 'index'])->middleware('auth')->name('admin.index'); // Admin
 Route::get('/admin/edit/{id}', [AdminController::class, 'edit'])->middleware('auth')->name('admin.edit');
 Route::post('/admin/update/{id}', [AdminController::class, 'update'])->middleware('auth')->name('admin.update');
 // Route riêng để phân quyền (nếu bạn muốn modal hoặc chức năng riêng biệt cho phân quyền)
 // Nếu bạn tích hợp vào modal chỉnh sửa chính, route này không cần thiết.
-Route::post('/admin/assign-roles/{id}', [AdminController::class, 'assignRoles'])->middleware('auth')->name('admin.assign_roles');// Phân quyền roles
+Route::post('/admin/assign-roles/{id}', [AdminController::class, 'assignRoles'])->middleware('auth')->name('admin.assign_roles'); // Phân quyền roles
 
-Route::get('/manage', [ManageController::class, 'index'])->middleware('auth')->name('manage.index');// Quản lý tài khoản
+Route::get('/manage', [ManageController::class, 'index'])->middleware('auth')->name('manage.index'); // Quản lý tài khoản
 
-Route::get('/show', [AccountController::class, 'show'])->middleware('auth')->name('show');// Hàm này dùng để show accounts các nề tảng
+Route::get('/show', [AccountController::class, 'show'])->middleware('auth')->name('show'); // Hàm này dùng để show accounts các nề tảng
 
 
 // ===============================================
@@ -71,9 +71,8 @@ Route::prefix('accounts')->middleware('auth')->name('accounts.')->group(function
     Route::get('/{account}/edit', [AccountController::class, 'edit'])->name('edit');
     Route::put('/{account}', [AccountController::class, 'update'])->name('update');
     Route::delete('/{account}', [AccountController::class, 'destroy'])->name('destroy');
-    Route::post('/verify-global-pin', [ApplicationSettingsController::class, 'verifyGlobalPin'])
-        ->name('globalpin.verify') // Bạn có thể giữ tên route này hoặc đổi thành settings.verifyPin
-        ->middleware('auth'); // Quan trọng: Đảm bảo người dùng đã đăng nhập
+    Route::post('/verify-global-pin', [ApplicationSettingsController::class, 'verifyGlobalPin'])->name('globalpin.verify')->middleware('auth'); 
+    Route::post('/verify-global-pin2', [ApplicationSettingsController::class, 'verifyGlobalPin2'])->name('globalpin.verify2')->middleware('auth'); 
     Route::post('/platforms/store-ajax', [AccountController::class, 'storeAjax'])->name('platforms.storeAjax')->middleware('auth');
 });
 
@@ -89,10 +88,10 @@ Route::prefix('emails')->middleware('auth')->name('emails.')->group(function () 
     Route::post('/', [EmailController::class, 'store'])->name('store');
     Route::put('/update/{id}', [EmailController::class, 'update'])->name('update');
 
-    
-    Route::post('/trigger-fetch-all-emails', [EmailController::class, 'fetchAllEmails'])->name('emails.triggerFetchAll');// Nếu nút "Làm mới hộp thư" chỉ làm mới tài khoản hiện tại, có thể không cần route này cho nút đó nữa.
 
-    Route::get('/get-mail-account/{id}', [EmailController::class, 'getMailAccountForEdit'])->name('getMailAccountForEdit');// Route để lấy thông tin tài khoản email cho việc chỉnh sửa
+    Route::post('/trigger-fetch-all-emails', [EmailController::class, 'fetchAllEmails'])->name('emails.triggerFetchAll'); // Nếu nút "Làm mới hộp thư" chỉ làm mới tài khoản hiện tại, có thể không cần route này cho nút đó nữa.
+
+    Route::get('/get-mail-account/{id}', [EmailController::class, 'getMailAccountForEdit'])->name('getMailAccountForEdit'); // Route để lấy thông tin tài khoản email cho việc chỉnh sửa
 
     Route::post('/apps/email/account/{accountId}/fetch', [EmailController::class, 'fetchEmailsForSpecificAccount'])->name('emails.fetchForAccount');
 

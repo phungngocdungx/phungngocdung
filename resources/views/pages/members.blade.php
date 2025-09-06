@@ -77,34 +77,26 @@
                                     <tr>
                                         <th class="white-space-nowrap fs-9 align-middle ps-0">
                                             <div class="form-check mb-0 fs-8"><input class="form-check-input"
-                                                    id="checkbox-bulk-general-select" type="checkbox"
-                                                    data-bulk-select='{"body":"general-members-table-body"}' /></div>
+                                                    id="checkbox-bulk-tiktok-select" type="checkbox"
+                                                    data-bulk-select='{"body":"tiktok-members-table-body"}' /></div>
                                         </th>
-                                        <th class="sort align-middle" scope="col" data-sort="customer"
-                                            style="width:15%; min-width:200px;">NỀN TẢNG</th>
-                                        <th class="sort align-middle" scope="col" data-sort="email"
-                                            style="width:15%; min-width:200px;">TÊN ĐĂNG NHẬP</th>
-                                        <th class="sort align-middle pe-3" scope="col"
-                                            style="width:20%; min-width:200px;">MẬT KHẨU</th>
-                                        <th class="sort align-middle" scope="col" data-sort="mobile_number"
-                                            style="width:10%;">NGƯỜI DÙNG
-                                        </th>
-                                        <th class="sort align-middle text-end pe-0" scope="col" data-sort="joined"
-                                            style="width:19%; min-width:200px;">UPDATE</th>
-                                        <th class="text-end align-middle" scope="col"
-                                            style="width:auto; min-width:220px; white-space: nowrap;"></th>
+                                        <th class="sort align-middle" scope="col" data-sort="email">NỀN TẢNG</th>
+                                        <th class="sort align-middle" scope="col" data-sort="password">TÊN ĐĂNG NHẬP</th>
+                                        <th class="sort align-middle" scope="col" data-sort="pass">MẬT KHẨU</th>
+                                        <th class="sort align-middle" scope="col" data-sort="pass2">PASS2</th>
+                                        <th class="sort align-middle" scope="col" data-sort="user">NGƯỜI DÙNG</th>
+                                        <th class="sort align-middle" scope="col" data-sort="date">UPDATE</th>
+                                        <th class="sort align-middle" scope="col" data-sort="action">ACTIONS</th>
                                     </tr>
                                 </thead>
-                                <tbody class="list" id="general-members-table-body">
-                                    {{-- Sử dụng biến $otherAccounts từ Controller --}}
+                                <tbody class="list" id="tiktok-members-table-body">
                                     @forelse ($otherAccounts as $account)
-                                        {{-- Giữ nguyên cấu trúc <tr> từ file gốc của bạn --}}
                                         <tr class="hover-actions-trigger btn-reveal-trigger position-static">
                                             <td class="fs-9 align-middle ps-0 py-3">
                                                 <div class="form-check mb-0 fs-8"><input class="form-check-input"
-                                                        type="checkbox" data-bulk-select-row='...' /></div>
+                                                        type="checkbox" /></div>
                                             </td>
-                                            <td class="customer align-middle white-space-nowrap">
+                                            <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
                                                 <a class="d-flex align-items-center text-body text-hover-1000"
                                                     href="#!">
                                                     <div class="avatar avatar-m">
@@ -116,13 +108,14 @@
                                                         {{ $account->platform->name ?? 'N/A' }}</h6>
                                                 </a>
                                             </td>
-                                            <td class="email align-middle white-space-nowrap">
+                                            <td class="align-middle white-space-nowrap">
                                                 <a class="fw-semibold" href="#">{{ $account->username }}</a>
                                             </td>
-                                            <td class="align-middle white-space-nowrap">
+                                            <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
                                                 <span class="password-text" id="passwordText-{{ $account->id }}"
                                                     data-actual-password="{{ $account->password }}"
-                                                    style="margin-right: 8px; vertical-align: middle;">********</span>
+                                                    style="margin-right: 8px; vertical-align: middle;">********
+                                                </span>
                                                 <button type="button"
                                                     class="btn btn-sm btn-outline-secondary btn-request-pin"
                                                     data-bs-toggle="modal" data-bs-target="#verifyPinModal"
@@ -131,16 +124,34 @@
                                                     <i class="fas fa-eye" aria-hidden="true"></i>
                                                 </button>
                                             </td>
-                                            <td class="mobile_number align-middle white-space-nowrap">
+                                            <td class="followers align-middle white-space-nowrap">
+                                                @if (!empty($account->password2))
+                                                    <span class="password-text" id="passwordText2-{{ $account->id }}"
+                                                        data-actual-password="{{ $account->password2 }}"
+                                                        style="margin-right: 8px; vertical-align: middle;">
+                                                        ********
+                                                    </span>
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-secondary btn-request-pin2"
+                                                        data-bs-toggle="modal" data-bs-target="#verifyPinModal2"
+                                                        data-span-id="passwordText2-{{ $account->id }}"
+                                                        title="Hiện mật khẩu"
+                                                        style="padding: 0.2rem 0.5rem; line-height: 1; vertical-align: middle;">
+                                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                                    </button>
+                                                @else
+                                                    <span style="margin-right: 8px; vertical-align: middle;">--</span>
+                                                @endif
+                                            </td>
+                                            <td class="status align-middle white-space-nowrap">
                                                 <a class="fw-bold text-body-emphasis" href="#">
                                                     {{ $account->familyMembers->isNotEmpty() ? $account->familyMembers->first()->name : '' }}
                                                 </a>
                                             </td>
-                                            <td class="joined align-middle white-space-nowrap text-body-tertiary text-end">
+                                            <td class="align-middle white-space-nowrap">
                                                 {{ $account->updated_at->format('d/m/Y H:i') }}
                                             </td>
                                             <td class="text-end align-middle white-space-nowrap">
-                                                {{-- Dropdown actions được giữ nguyên --}}
                                                 <div class="dropdown font-sans-serif position-static">
                                                     <button
                                                         class="btn btn-sm btn-phoenix-secondary btn-icon dropdown-toggle hide-arrow"
@@ -153,20 +164,21 @@
                                                             data-account-id="{{ $account->id }}">
                                                             <i class="fas fa-edit fa-fw me-2"></i>Sửa
                                                         </a>
-                                                        {{-- Các actions khác --}}
                                                     </div>
                                                 </div>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center py-4">Không có tài khoản chung nào.</td>
+                                            <td colspan="7" class="text-center py-4">Không có tài khoản TikTok nào.
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
-                        {{-- Giữ nguyên cấu trúc phân trang từ file gốc --}}
+
+                        {{-- Phân trang --}}
                         <div class="row align-items-center justify-content-between py-2 pe-0 fs-9">
                             <div class="col-auto d-flex">
                                 <p class="mb-0 d-none d-sm-block me-3 fw-semibold text-body"
@@ -187,7 +199,6 @@
                     </div>
                 </div>
 
-
                 {{-- =============================================== --}}
                 {{-- TAB PANE 2: TÀI KHOẢN TIKTOK --}}
                 {{-- Tái sử dụng cấu trúc HTML gốc cho tab này --}}
@@ -195,7 +206,7 @@
                 <div class="tab-pane fade" id="tiktok-accounts-pane" role="tabpanel"
                     aria-labelledby="tiktok-accounts-tab" tabindex="0">
                     <div class="mx-n4 mx-lg-n6 px-4 px-lg-6 mb-9 bg-body-emphasis border-y mt-2 position-relative top-1"
-                        data-list='{"valueNames":["tiktok_user","email","followers","status"],"page":10,"pagination":true}'>
+                        data-list='{"valueNames":["customer","email","mobile_number","joined"],"page":10,"pagination":true}'>
                         <div class="table-responsive scrollbar ms-n1 ps-1">
                             <table class="table table-sm fs-9 mb-0">
                                 <thead>
@@ -293,10 +304,16 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        {{-- Phân trang --}}
                         <div class="row align-items-center justify-content-between py-2 pe-0 fs-9">
                             <div class="col-auto d-flex">
                                 <p class="mb-0 d-none d-sm-block me-3 fw-semibold text-body"
                                     data-list-info="data-list-info"></p>
+                                <a class="fw-semibold" href="#!" data-list-view="*">View all<span
+                                        class="fas fa-angle-right ms-1" data-fa-transform="down-1"></span></a>
+                                <a class="fw-semibold d-none" href="#!" data-list-view="less">View Less<span
+                                        class="fas fa-angle-right ms-1" data-fa-transform="down-1"></span></a>
                             </div>
                             <div class="col-auto d-flex">
                                 <button class="page-link" data-list-pagination="prev"><span
@@ -308,21 +325,6 @@
                         </div>
                     </div>
                 </div>
-                {{-- Phân trang --}}
-                {{-- <div class="row align-items-center justify-content-between py-2 pe-0 fs-9">
-                    <div class="col-auto d-flex">
-                        <p class="mb-0 d-none d-sm-block me-3 fw-semibold text-body" data-list-info="data-list-info"></p>
-                        <a class="fw-semibold" href="#!" data-list-view="*">View all<span
-                                class="fas fa-angle-right ms-1" data-fa-transform="down-1"></span></a><a
-                            class="fw-semibold d-none" href="#!" data-list-view="less">View Less<span
-                                class="fas fa-angle-right ms-1" data-fa-transform="down-1"></span></a>
-                    </div>
-                    <div class="col-auto d-flex"><button class="page-link" data-list-pagination="prev"><span
-                                class="fas fa-chevron-left"></span></button>
-                        <ul class="mb-0 pagination"></ul><button class="page-link pe-0" data-list-pagination="next"><span
-                                class="fas fa-chevron-right"></span></button>
-                    </div>
-                </div> --}}
             </div>
         </div>
         @include('partials.footer')
@@ -355,6 +357,35 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     <button type="button" class="btn btn-primary" id="submitPinButton">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="verifyPinModal2" tabindex="-1" aria-labelledby="verifyPinModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="verifyPinModalLabel">Xác thực Mã PIN 2</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="verifyPinForm">
+                        <div class="mb-3">
+                            <label for="globalPinInput2" class="form-label">Nhập Mã PIN (8 chữ số)2:</label>
+                            <input type="password" class="form-control" id="globalPinInput2" name="global_pin2"
+                                maxlength="8" pattern="\d{8}" inputmode="numeric" required autocomplete="off">
+                            <div class="invalid-feedback" id="pinErrorMessage2" style="display: none;">Mã PIN
+                                không đúng hoặc có lỗi.</div>
+                        </div>
+                        {{-- Trường ẩn để lưu trữ thông tin về account nào đang được yêu cầu --}}
+                        <input type="hidden" id="targetPasswordSpanId">
+                        <input type="hidden" id="targetPasswordButtonId">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="submitPinButton2">Xác nhận</button>
                 </div>
             </div>
         </div>
@@ -538,7 +569,8 @@
                             {{-- Fields for VNeID (specific to VNeID - chỉ có encrypted_password_2) --}}
                             <div id="vneid_specific_fields" style="display: none;">
                                 <div class="mb-3">
-                                    <label for="encrypted_password_2" class="form-label">Mật khẩu cấp 2 (VNeID)</label>
+                                    <label for="encrypted_password_2" class="form-label"
+                                        id="platform_details_label"></label>
                                     <div class="input-group">
                                         <input type="password"
                                             class="form-control @error('encrypted_password_2', 'storeAccount') is-invalid @enderror"
@@ -552,7 +584,6 @@
                                     @enderror
                                 </div>
                             </div> {{-- End vneid_specific_fields --}}
-
                         </div> {{-- END: platform_details_fields --}}
 
                         @if (isset($allFamilyMembers) && $allFamilyMembers->count() > 0)
@@ -727,7 +758,21 @@
                                                 {{-- Đã đổi ID --}}
                                             </div>
                                         </div>
-                                    </div> {{-- End editVneidSpecificFields --}}
+                                    </div> {{-- End editMessagesSpecificFields --}}
+                                    <div id="editMessagesSpecificFields" style="display: none;">
+                                        <div class="mb-3">
+                                            <label for="edit_encrypted_password_2" class="form-label">Mật khẩu cấp 2
+                                                (Messages)</label>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control"
+                                                    id="edit_encrypted_password_2" name="encrypted_password_2"
+                                                    autocomplete="new-password">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    id="toggleEditMessagesPassword2"><i class="fas fa-eye"></i></button>
+                                                {{-- Đã đổi ID --}}
+                                            </div>
+                                        </div>
+                                    </div> {{-- End editMessagesSpecificFields --}}
 
                                 </div> {{-- END: editSocialNetworkDetailsFields --}}
 
@@ -842,6 +887,7 @@
             // KHỐI 1: XỬ LÝ CHO MODAL XÁC THỰC PIN (verifyPinModal)
             // =================================================================================
             const verifyPinModalElement = document.getElementById('verifyPinModal');
+            const verifyPinModalElement2 = document.getElementById('verifyPinModal2');
             if (verifyPinModalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
                 const verifyPinModal = new bootstrap.Modal(verifyPinModalElement);
                 const globalPinInput = document.getElementById('globalPinInput');
@@ -902,7 +948,6 @@
                         }
 
                         fetch('{{ route('accounts.globalpin.verify') }}', {
-                                /* ... (như code trước) ... */
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -969,6 +1014,132 @@
             } else {
                 console.warn('JS Warning: Modal #verifyPinModal hoặc Bootstrap JS chưa sẵn sàng.');
             }
+            if (verifyPinModalElement2 && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                const verifyPinModal = new bootstrap.Modal(verifyPinModalElement2);
+                // SỬA CÁC ID DƯỚI ĐÂY ĐỂ KHỚP CHÍNH XÁC VỚI HTML
+                const globalPinInput = document.getElementById('globalPinInput2');
+                const pinErrorMessage = document.getElementById('pinErrorMessage2');
+                const submitPinButton = document.getElementById('submitPinButton2');
+
+                if (globalPinInput && pinErrorMessage && submitPinButton) {
+                    let currentTargetSpanForPin = null;
+                    let currentTargetButtonForPin = null;
+                    let currentActualPasswordForPin = '';
+
+                    document.querySelectorAll('.btn-request-pin2').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const spanId = this.dataset.spanId;
+                            currentTargetSpanForPin = document.getElementById(spanId);
+                            currentTargetButtonForPin = this;
+
+                            if (currentTargetSpanForPin && typeof currentTargetSpanForPin.dataset
+                                .actualPassword !== 'undefined') {
+                                currentActualPasswordForPin = currentTargetSpanForPin.dataset
+                                    .actualPassword;
+                            } else {
+                                console.error(
+                                    'PIN Modal: Span mật khẩu mục tiêu không tìm thấy hoặc thiếu data-actual-password. Span ID mong đợi:',
+                                    spanId);
+                                return;
+                            }
+                            globalPinInput.value = '';
+                            pinErrorMessage.textContent = '';
+                            pinErrorMessage.style.display = 'none';
+                            globalPinInput.classList.remove('is-invalid');
+                            submitPinButton.disabled = false;
+                            submitPinButton.innerHTML = 'Xác nhận';
+                        });
+                    });
+
+                    submitPinButton.addEventListener('click', function() {
+                        const pin = globalPinInput.value.trim();
+                        pinErrorMessage.style.display = 'none';
+                        globalPinInput.classList.remove('is-invalid');
+
+                        if (pin.length !== 8 || !/^\d+$/.test(pin)) {
+                            pinErrorMessage.textContent = 'Mã PIN phải là 8 chữ số.';
+                            pinErrorMessage.style.display = 'block';
+                            globalPinInput.classList.add('is-invalid');
+                            return;
+                        }
+
+                        this.disabled = true;
+                        this.innerHTML =
+                            '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
+                        if (!csrfToken) {
+                            console.error('CSRF Token missing!');
+                            this.disabled = false;
+                            this.innerHTML = 'Xác nhận';
+                            return;
+                        }
+
+                        fetch('{{ route('accounts.globalpin.verify2') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    global_pin2: pin
+                                })
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    return response.json().then(errData => Promise.reject(errData || {
+                                        message: `Lỗi HTTP ${response.status}`
+                                    }));
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.success) {
+                                    verifyPinModal.hide();
+                                    if (currentTargetSpanForPin && currentTargetButtonForPin &&
+                                        typeof currentActualPasswordForPin !== 'undefined') {
+                                        const icon = currentTargetButtonForPin.querySelector('i.fas');
+                                        currentTargetSpanForPin.textContent =
+                                            currentActualPasswordForPin;
+                                        if (icon) {
+                                            icon.classList.remove('fa-eye');
+                                            icon.classList.add('fa-eye-slash');
+                                        }
+                                        currentTargetButtonForPin.setAttribute('title', 'Ẩn mật khẩu');
+                                    }
+                                } else {
+                                    pinErrorMessage.textContent = data.message || 'Mã PIN không đúng.';
+                                    pinErrorMessage.style.display = 'block';
+                                    globalPinInput.classList.add('is-invalid');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Lỗi PIN Verify:', error);
+                                pinErrorMessage.textContent = error.message || 'Lỗi kết nối.';
+                                pinErrorMessage.style.display = 'block';
+                                globalPinInput.classList.add('is-invalid');
+                            })
+                            .finally(() => {
+                                if (submitPinButton) {
+                                    submitPinButton.disabled = false;
+                                    submitPinButton.innerHTML = 'Xác nhận';
+                                }
+                            });
+                    });
+
+                    verifyPinModalElement2.addEventListener('hidden.bs.modal', function() {
+                        if (globalPinInput) globalPinInput.value = '';
+                        if (pinErrorMessage) {
+                            pinErrorMessage.textContent = '';
+                            pinErrorMessage.style.display = 'none';
+                        }
+                        if (globalPinInput) globalPinInput.classList.remove('is-invalid');
+                    });
+                } else {
+                    console.error('JS Error: Các phần tử của modal PIN không đủ.');
+                }
+            } else {
+                console.warn('JS Warning: Modal #verifyPinModal hoặc Bootstrap JS chưa sẵn sàng.');
+            }
 
 
             // =================================================================================
@@ -1013,12 +1184,12 @@
                 const editPlatformDetailsTitle = document.getElementById('editPlatformDetailsTitle');
                 const editAccountStatusField = document.getElementById('edit_account_status');
                 const editEncryptedPassword2Field = document.getElementById(
-                'edit_encrypted_password_2'); // ID đã được đổi
+                    'edit_encrypted_password_2'); // ID đã được đổi
                 const editLastLoginIpField = document.getElementById('edit_last_login_ip');
 
                 // Nút hiện/ẩn mật khẩu cấp 2 trong modal SỬA (cho VNeID) - Đảm bảo ID khớp với HTML
                 const toggleEditVneidPassword2Button = document.getElementById(
-                'toggleEditVneidPassword2'); // ID đã được đổi
+                    'toggleEditVneidPassword2'); // ID đã được đổi
                 if (toggleEditVneidPassword2Button && editEncryptedPassword2Field) {
                     toggleEditVneidPassword2Button.addEventListener('click', function() {
                         const type = editEncryptedPassword2Field.getAttribute('type') === 'password' ?
@@ -1051,7 +1222,7 @@
                     if (editTiktokUserIdInput) editTiktokUserIdInput.value = '';
                     if (editFollowerCountInput) editFollowerCountInput.value = '0';
                     if (editEncryptedPassword2Field) editEncryptedPassword2Field.value =
-                    ''; // Reset encrypted_password_2
+                        ''; // Reset encrypted_password_2
                     if (editLastLoginIpField) editLastLoginIpField.value = ''; // Reset last_login_ip
                     if (editAccountStatusField) editAccountStatusField.value = 'active'; // Reset status
 
@@ -1111,7 +1282,7 @@
                                     document.getElementById('edit_username').value = data
                                         .account.username;
                                     document.getElementById('edit_password').value =
-                                    ''; // Giữ rỗng vì là "mật khẩu mới"
+                                        ''; // Giữ rỗng vì là "mật khẩu mới"
                                     document.getElementById('edit_password_confirmation')
                                         .value = '';
                                     document.getElementById('edit_note').value = data.account
@@ -1142,7 +1313,7 @@
 
                                     // Gọi hàm để hiển thị/ẩn các trường chi tiết sau khi dữ liệu được tải
                                     togglePlatformSpecificFieldsForEditModal
-                                (); // Gọi hàm này để ẩn tất cả và reset
+                                        (); // Gọi hàm này để ẩn tất cả và reset
 
                                     // Sau khi hàm toggle đã ẩn và reset, hãy đặt giá trị từ dữ liệu đã fetch
                                     if (data.socialnetwork_detail) {
@@ -1337,10 +1508,11 @@
             // =================================================================================
             const addAccountModalElement = document.getElementById('addAccountModal'); // Lấy biến modal element
 
-            // CHỈ KHAI BÁO CÁC BIẾN NÀY MỘT LẦN TRONG KHỐI NÀY
+            // CHỈ KHAI BÁO CÁC BIẾN NÀY MỘT LẦN TRONG KHỐI NÀY Đ
             const addPlatformSelect = document.getElementById('add_platform_id');
             const platformDetailsFields = document.getElementById('platform_details_fields');
             const platformDetailsTitle = document.getElementById('platform_details_title');
+            const platformDetailsLabel = document.getElementById('platform_details_label');
             const tiktokSpecificFields = document.getElementById('tiktok_specific_fields');
             const vneidSpecificFields = document.getElementById('vneid_specific_fields');
             const addStatusField = document.getElementById(
@@ -1361,7 +1533,7 @@
                 });
             }
 
-            // Nút hiện/ẩn mật khẩu cấp 2 trong modal THÊM (cho VNeID)
+            // Nút hiện/ẩn mật khẩu cấp 2 trong modal THÊM (cho VNeID, Messenger)
             const toggleAddPassword2Button = document.getElementById('toggleAddPassword2');
             const addPassword2Field = document.getElementById('encrypted_password_2');
             if (toggleAddPassword2Button && addPassword2Field) {
@@ -1407,12 +1579,26 @@
                     if (platformDetailsTitle) platformDetailsTitle.textContent = 'Thông tin chi tiết TikTok';
                     if (tiktokSpecificFields) tiktokSpecificFields.style.display = 'block';
                     // Trường status được chứa trong tiktok_specific_fields nên sẽ tự hiển thị
+                } else if (selectedPlatformId === '1') { // Zalo
+                    if (platformDetailsFields) platformDetailsFields.style.display = 'block';
+                    if (platformDetailsTitle) platformDetailsTitle.textContent = 'Thông tin chi tiết Zalo';
+                    if (platformDetailsLabel) platformDetailsLabel.textContent = 'Pass sao lưu tin nhắn Zalo';
+                    if (vneidSpecificFields) vneidSpecificFields.style.display = 'block';
+                    // Zalo chỉ có encrypted_password_2, không có status hay last_login_ip theo yêu cầu mới.
                 } else if (selectedPlatformId === '3') { // VNeID
                     if (platformDetailsFields) platformDetailsFields.style.display = 'block';
                     if (platformDetailsTitle) platformDetailsTitle.textContent = 'Thông tin chi tiết VNeID';
+                    if (platformDetailsLabel) platformDetailsLabel.textContent = 'Mật khẩu cấp 2 VNeID';
                     if (vneidSpecificFields) vneidSpecificFields.style.display = 'block';
                     // VNeID chỉ có encrypted_password_2, không có status hay last_login_ip theo yêu cầu mới.
+                } else if (selectedPlatformId === '7') { // Messenger
+                    if (platformDetailsFields) platformDetailsFields.style.display = 'block';
+                    if (platformDetailsTitle) platformDetailsTitle.textContent = 'Thông tin chi tiết Messenger';
+                    if (platformDetailsLabel) platformDetailsLabel.textContent = 'Mã PIN Messenger';
+                    if (vneidSpecificFields) vneidSpecificFields.style.display = 'block';
+                    // Messenger chỉ có encrypted_password_2, không có status hay last_login_ip theo yêu cầu mới.
                 }
+
                 // Các nền tảng khác không có chi tiết đặc biệt thì platformDetailsFields vẫn ẩn
             }
 

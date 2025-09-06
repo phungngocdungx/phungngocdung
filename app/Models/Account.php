@@ -68,6 +68,21 @@ class Account extends Model
         }
     }
 
+    public function getPassword2Attribute()
+    {
+        $value = $this->attributes['encrypted_password_2'] ?? null;
+
+        if (empty($value)) {
+            return null; // Trả về null nếu không có giá trị
+        }
+
+        try {
+            return Crypt::decryptString($value);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            return 'Không thể giải mã!';
+        }
+    }
+
     // --- MUTATORS ĐỂ MÃ HÓA TRƯỚC KHI LƯU ---
     public function setUsernameAttribute($value)
     {

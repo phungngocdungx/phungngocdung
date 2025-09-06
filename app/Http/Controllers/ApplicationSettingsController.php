@@ -66,6 +66,53 @@ class ApplicationSettingsController extends Controller
             return response()->json(['success' => false, 'message' => 'Mã PIN không đúng.'], 401); // Unauthorized hoặc 422
         }
     }
+    /**
+     * Verify the submitted second global PIN for viewing sensitive passwords.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verifyGlobalPin2(Request $request)
+    {
+        // Validate input
+        $validator = Validator::make($request->all(), [ // Sử dụng Facade Validator
+            'global_pin2' => 'required|string|digits:8', // Yêu cầu 8 chữ số
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mã PIN phải là 8 chữ số ok.',
+                'errors' => $validator->errors()
+            ], 422); // Unprocessable Entity
+        }
+
+        $submittedPin = $request->input('global_pin2');
+        
+        // Lấy mã PIN đã mã hóa từ CSDL và giải mã nó
+        // Giả sử bạn lưu mã PIN toàn cục với key là 'global_view_pin'
+        $storedDecryptedPin = Application_settings::getDecryptedValue('global_view_pin');
+
+        if ($storedDecryptedPin === null) {
+            // Trường hợp mã PIN toàn cục chưa được thiết lập trong CSDL
+            // \Log::error("Mã PIN toàn cục 'global_view_pin' chưa được thiết lập trong Application_settings.");
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi hệ thống: Mã PIN bảo mật chưa được cấu hình.'
+            ], 500); // Lỗi server
+        }
+
+        if ($submittedPin === $storedDecryptedPin) {
+            // Mã PIN chính xác
+            // Tùy chọn: Lưu trạng thái đã xác thực PIN vào session
+            session(['global_pin_verified_at' => now()]);
+
+            return response()->json(['success' => true, 'message' => 'Xác thực Mã PIN thành công!']);
+        } else {
+            // Mã PIN sai
+            return response()->json(['success' => false, 'message' => 'Mã PIN không đúng.'], 401); // Unauthorized hoặc 422
+        }
+    }
 
     // Bạn có thể thêm các phương thức khác vào controller này sau
     // ví dụ: index() để hiển thị form cài đặt, update() để lưu cài đặt...

@@ -167,7 +167,12 @@ class AccountController extends Controller
             $account->note = $validatedData['note'] ?? null; // Mutator vẫn hoạt động cho note
 
             // Xử lý encrypted_password_2 cho VNeID (thủ công)
-            if ($validatedData['platform_id'] == 3 && isset($validatedData['encrypted_password_2'])) {
+            // if ($validatedData['platform_id'] == 3 && isset($validatedData['encrypted_password_2'])) {
+            //     $account->encrypted_password_2 = Crypt::encryptString($validatedData['encrypted_password_2']);
+            // }
+            if (($validatedData['platform_id'] == 1 || $validatedData['platform_id'] == 3 || $validatedData['platform_id'] == 7)
+                && isset($validatedData['encrypted_password_2'])
+            ) {
                 $account->encrypted_password_2 = Crypt::encryptString($validatedData['encrypted_password_2']);
             } else {
                 $account->encrypted_password_2 = null; // Đảm bảo là null nếu không phải VNeID
@@ -194,7 +199,7 @@ class AccountController extends Controller
                     $socialNetworkDetail->tiktok_user_id = $validatedData['tiktok_user_id'];
                     $socialNetworkDetail->follower_count = $validatedData['follower_count'] ?? 0;
                     $socialNetworkDetail->status = $validatedData['status'] ?? 'active';
-                } elseif ($validatedData['platform_id'] == 3) { // VNeID
+                } elseif ($validatedData['platform_id'] == 1 || $validatedData['platform_id'] == 3 || $validatedData['platform_id'] == 7) { // VNeID
                     // VNeID không có các trường này trong social_network_details theo yêu cầu mới.
                     $socialNetworkDetail->status = 'active'; // Đảm bảo có giá trị vì cột NOT NULL
                 }
@@ -333,13 +338,13 @@ class AccountController extends Controller
 
             // Xử lý encrypted_password_2 cho VNeID (thủ công, vì không dùng mutator tự động cho cột này)
             if ($validatedData['platform_id'] == 3) {
-                 if (isset($validatedData['encrypted_password_2'])) {
+                if (isset($validatedData['encrypted_password_2'])) {
                     $account->encrypted_password_2 = Crypt::encryptString($validatedData['encrypted_password_2']);
-                 } else {
+                } else {
                     $account->encrypted_password_2 = null; // Nếu trường không có hoặc rỗng khi là VNeID
-                 }
+                }
             } else {
-                 $account->encrypted_password_2 = null; // Clear if platform is changed from VNeID
+                $account->encrypted_password_2 = null; // Clear if platform is changed from VNeID
             }
 
             $account->note = $validatedData['note'] ?? null; // Mutator vẫn hoạt động cho note
@@ -411,7 +416,7 @@ class AccountController extends Controller
             return response()->json(['success' => false, 'message' => 'Đã có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
     }
-    
+
     public function showAccTT(Request $request)
     {
         // Lấy thông tin người dùng đang đăng nhập
