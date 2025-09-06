@@ -265,9 +265,9 @@ class FetchMailJob implements ShouldQueue
                 }
             }
             Log::info("[Job ID: {$jobId}] Tìm thấy " . count($serverMessageIds) . " Message-ID trên server.");
-            
+
             $localMessageIds = Email::where('mail_account_id', $this->account->id)
-                                ->pluck('message_id')->toArray();
+                ->pluck('message_id')->toArray();
             Log::info("[Job ID: {$jobId}] Tìm thấy " . count($localMessageIds) . " Message-ID trong database local.");
 
             $messageIdsToDeleteLocally = array_diff($localMessageIds, $serverMessageIds);
@@ -277,8 +277,8 @@ class FetchMailJob implements ShouldQueue
                 $totalDeletedCount = 0;
                 foreach ($chunksToDelete as $chunk) {
                     $deletedCount = Email::where('mail_account_id', $this->account->id)
-                                       ->whereIn('message_id', $chunk)
-                                       ->delete();
+                        ->whereIn('message_id', $chunk)
+                        ->delete();
                     $totalDeletedCount += $deletedCount;
                 }
                 Log::info("[Job ID: {$jobId}] Đã xóa thành công {$totalDeletedCount} email khỏi local DB (vì không còn trên server).");
@@ -303,7 +303,7 @@ class FetchMailJob implements ShouldQueue
                     }
                     $directDate = $message->getDate(); // Thử getDate() nếu $message->date không cho Carbon
                     if ($directDate instanceof \Carbon\Carbon) {
-                        return $directDate->getTimestamp();
+                        return $directDate->setTimezone('Asia/Ho_Chi_Minh')->getTimestamp();
                     }
                     Log::warning("[Job ID: {$jobId}] Không thể lấy Carbon date để sắp xếp cho MessageID: " . ($message->getMessageId() ?? 'N/A_Sort') . ". Dùng giá trị 0.");
                     return 0;
@@ -330,9 +330,9 @@ class FetchMailJob implements ShouldQueue
                 $dateFromIMAP = null;
                 $dateAttrForField = $message->date;
                 if ($dateAttrForField instanceof \Webklex\PHPIMAP\Attribute && $dateAttrForField->first() instanceof \Carbon\Carbon) {
-                    $dateFromIMAP = $dateAttrForField->first();
+                    $dateFromIMAP = $dateAttrForField->first()->setTimezone('Asia/Ho_Chi_Minh');
                 } elseif ($message->getDate() instanceof \Carbon\Carbon) {
-                     $dateFromIMAP = $message->getDate();
+                    $dateFromIMAP = $message->getDate()->setTimezone('Asia/Ho_Chi_Minh');
                 }
 
                 $fromAddressFromIMAP = null;
@@ -345,7 +345,7 @@ class FetchMailJob implements ShouldQueue
                         $fromNameFromIMAP = mb_decode_mimeheader((string)$firstFrom->personal);
                     }
                 }
-                if(empty($fromAddressFromIMAP)) $fromAddressFromIMAP = 'unknown@example.com';
+                if (empty($fromAddressFromIMAP)) $fromAddressFromIMAP = 'unknown@example.com';
 
                 $subjectToSave = $this->processSubject($message);
                 $htmlBodyToSave = $this->processBodyHtml($message);
@@ -372,8 +372,8 @@ class FetchMailJob implements ShouldQueue
             if (!empty($processedAndKeptMessageIds)) {
                 // Xóa tất cả email của tài khoản này trong DB mà message_id KHÔNG nằm trong danh sách 2 email vừa xử lý
                 $deletedOlderCount = Email::where('mail_account_id', $this->account->id)
-                                     ->whereNotIn('message_id', $processedAndKeptMessageIds)
-                                     ->delete();
+                    ->whereNotIn('message_id', $processedAndKeptMessageIds)
+                    ->delete();
                 if ($deletedOlderCount > 0) {
                     Log::info("[Job ID: {$jobId}] Đã xóa {$deletedOlderCount} email cũ hơn khỏi local DB cho tài khoản {$this->account->id}, chỉ giữ lại tối đa " . count($processedAndKeptMessageIds) . " email mới nhất.");
                 } else {
@@ -391,7 +391,6 @@ class FetchMailJob implements ShouldQueue
 
             Log::info("[Job ID: {$jobId}] 💾 (Job) Đã hoàn tất FetchMailJob cho tài khoản: {$this->account->email}");
             $client->disconnect();
-
         } catch (ConnectionFailedException $e) {
             $jobIdForError = $this->jobIdIfAvailable();
             Log::error("[Job ID: {$jobIdForError}] ❌ Lỗi kết nối IMAP cho tài khoản {$this->account->email}: " . $e->getMessage());
