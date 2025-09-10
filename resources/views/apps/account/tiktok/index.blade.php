@@ -132,7 +132,7 @@
                                                         type="checkbox" /></div>
                                             </td>
                                             <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
-                                                {{ $account->socialnetworkDetail->mailAccount->email ?? '(chưa có)' }}
+                                                {{ $account->username ?? '(chưa có)' }}
                                             </td>
 
                                             <td class="tiktok_user align-middle white-space-nowrap fw-semibold">
@@ -195,14 +195,14 @@
                                                         $status === 'active'
                                                             ? 'success'
                                                             : ($status === 'locked'
-                                                                ? 'danger'
-                                                                : 'warning');
+                                                                ? 'warning'
+                                                                : 'danger');
                                                 @endphp
                                                 <span
                                                     class="badge badge-phoenix fs-10 badge-phoenix-{{ $badgeClass }}">{{ ucfirst($status) }}</span>
                                             </td>
                                             <td class="align-middle white-space-nowrap">
-                                                {{ $account->username }}
+                                                {{ $account->note }}
                                             </td>
                                         </tr>
                                     @empty
