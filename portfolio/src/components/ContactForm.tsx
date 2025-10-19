@@ -22,6 +22,17 @@ const ContactForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Validate before sending
+      if (fullName.length < 2) {
+        throw new Error("Họ tên phải có ít nhất 2 ký tự");
+      }
+      if (message.length < 10) {
+        throw new Error("Nội dung tin nhắn phải có ít nhất 10 ký tự");
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error("Email không hợp lệ");
+      }
+
       const res = await fetch("/api/send", {
         method: "POST",
         headers: {
@@ -36,8 +47,8 @@ const ContactForm = () => {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       toast({
-        title: "Thank you!",
-        description: "I'll get back to you as soon as possible.",
+        title: "Cảm ơn bạn đã liên hệ!",
+        description: "Tôi sẽ phản hồi bạn sớm nhất có thể.",
         variant: "default",
         className: cn("top-0 mx-auto flex fixed md:top-4 md:right-4"),
       });
@@ -51,8 +62,8 @@ const ContactForm = () => {
       }, 1000);
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Something went wrong! Please check the fields.",
+        title: "Lỗi gửi tin nhắn",
+        description: "Đã có lỗi xảy ra! Vui lòng kiểm tra các trường.",
         className: cn(
           "top-0 w-full flex justify-center fixed md:max-w-7xl md:top-4 md:right-4"
         ),
@@ -65,10 +76,10 @@ const ContactForm = () => {
     <form className="min-w-7xl mx-auto sm:mt-4" onSubmit={handleSubmit}>
       <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
         <LabelInputContainer>
-          <Label htmlFor="fullname">Full name</Label>
+          <Label htmlFor="fullname">Họ và tên</Label>
           <Input
             id="fullname"
-            placeholder="Your Name"
+            placeholder="Vui lòng nhập họ và tên"
             type="text"
             required
             value={fullName}
@@ -76,10 +87,10 @@ const ContactForm = () => {
           />
         </LabelInputContainer>
         <LabelInputContainer className="mb-4">
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="email">Địa chỉ Email</Label>
           <Input
             id="email"
-            placeholder="you@example.com"
+            placeholder="you@gmail.com"
             type="email"
             required
             value={email}
@@ -88,16 +99,16 @@ const ContactForm = () => {
         </LabelInputContainer>
       </div>
       <div className="grid w-full gap-1.5 mb-4">
-        <Label htmlFor="content">Your Message</Label>
+        <Label htmlFor="content">Nội dung</Label>
         <Textarea
-          placeholder="Tell me about about your project,"
+          placeholder="Vui lòng nhâp nội dung bạn muốn gửi..."
           id="content"
           required
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
         <p className="text-sm text-muted-foreground">
-          I&apos;ll never share your data with anyone else. Pinky promise!
+          Tôi sẽ không bao giờ chia sẻ dữ liệu của bạn với bất kỳ ai khác. Hứa!
         </p>
       </div>
       <Button
@@ -108,11 +119,11 @@ const ContactForm = () => {
         {loading ? (
           <div className="flex items-center justify-center">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            <p>Please wait</p>
+            <p>Vui lòng chờ</p>
           </div>
         ) : (
           <div className="flex items-center justify-center">
-            Send Message <ChevronRight className="w-4 h-4 ml-4" />
+            Gửi tin nhắn <ChevronRight className="w-4 h-4 ml-4" />
           </div>
         )}
         <BottomGradient />

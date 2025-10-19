@@ -11,7 +11,7 @@ import {
 import { usePreloader } from "../preloader";
 import { BlurIn, BoxReveal } from "../reveal-animations";
 import ScrollDownIcon from "../scroll-down-icon";
-import { SiGithub, SiLinkedin } from "react-icons/si";
+import { SiGithub, SiLinkedin, SiTiktok, SiFacebook, SiZalo } from "react-icons/si";
 import { config } from "@/data/config";
 
 const HeroSection = () => {
@@ -51,9 +51,10 @@ const HeroSection = () => {
                           "cursor-default text-edge-outline font-display sm:text-7xl md:text-9xl "
                         )}
                       >
-                        {config.author.split(" ")[0]}
-                        <br className="md:block hiidden" />
+                        {/* {config.author.split(" ")[0]} */}
                         {config.author.split(" ")[1]}
+                        <br className="md:block hiidden" />
+                        {config.author.split(" ")[2]}
                         {/* PLEASE hello??
 
                         <br className="md:block hiidden" />
@@ -64,7 +65,7 @@ const HeroSection = () => {
                       side="top"
                       className="dark:bg-white dark:text-black"
                     >
-                      theres something waiting for you in devtools
+                      Rất vui được gặp bạn! 👋
                     </TooltipContent>
                   </Tooltip>
                 </BlurIn>
@@ -76,7 +77,7 @@ const HeroSection = () => {
                       "cursor-default font-display sm:text-xl md:text-xl whitespace-nowrap bg-clip-text "
                     )}
                   >
-                    A Full Stack Web Developer
+                    Full Stack Web Developer
                   </p>
                 </BlurIn>
               </div>
@@ -91,7 +92,7 @@ const HeroSection = () => {
                   <BoxReveal delay={2} width="100%" >
                     <Button className="flex items-center gap-2 w-full">
                       <File size={24} />
-                      <p>Resume</p>
+                      <p>Bản tóm tắt</p>
                     </Button>
                   </BoxReveal>
                 </Link>
@@ -103,7 +104,7 @@ const HeroSection = () => {
                           variant={"outline"}
                           className="block w-full overflow-hidden"
                         >
-                          Hire Me
+                          Liên hệ tôi
                         </Button>
                       </Link>
                     </TooltipTrigger>
@@ -120,11 +121,19 @@ const HeroSection = () => {
                     </Button>
                   </Link>
                   <Link
-                    href={config.social.linkedin}
+                    href={config.social.facebook}
                     target="_blank"
                   >
                     <Button variant={"outline"}>
-                      <SiLinkedin size={24} />
+                      <SiFacebook size={24} />
+                    </Button>
+                  </Link>
+                  <Link
+                    href={config.social.zalo}
+                    target="_blank"
+                  >
+                    <Button variant={"outline"}>
+                      <SiZalo size={24} />
                     </Button>
                   </Link>
                 </div>
