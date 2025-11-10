@@ -84,20 +84,19 @@ const HeroSection = () => {
               <div className="mt-8 md:ml-2 flex flex-col gap-3">
                 <Link
                   href={
-                    "https://drive.google.com/file/d/1O97WCk2DrO9x6SHOqf7LvRbmHkMgGIb4/view?usp=sharing"
+                    "#contact"
                   }
-                  target="_blank"
                   className="flex-1"
                 >
                   <BoxReveal delay={2} width="100%" >
                     <Button className="flex items-center gap-2 w-full">
                       <File size={24} />
-                      <p>Bản tóm tắt</p>
+                      <p>Liên hệ tôi</p>
                     </Button>
                   </BoxReveal>
                 </Link>
                 <div className="md:self-start flex gap-3">
-                  <Tooltip delayDuration={300}>
+                  {/* <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                       <Link href={"#contact"}>
                         <Button
@@ -111,7 +110,7 @@ const HeroSection = () => {
                     <TooltipContent side="bottom">
                       <p>pls 🥹 🙏</p>
                     </TooltipContent>
-                  </Tooltip>
+                  </Tooltip> */}
                   <Link
                     href={config.social.github}
                     target="_blank"
